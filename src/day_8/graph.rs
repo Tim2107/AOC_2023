@@ -44,6 +44,43 @@ impl Graph {
         }
         None
     }
+
+    pub fn traverse_all(&self, waypoint_instructions: &str, max_steps: usize) -> Option<usize> {
+        let start_nodes: Vec<_> = self.nodes.values()
+            .filter(|node| node.is_start_node())
+            .collect();
+
+        let mut paths = start_nodes;
+        let mut step = 0;
+
+        while step < max_steps {
+            let mut next_paths = Vec::new();
+            let instruction = waypoint_instructions.chars().nth(step % waypoint_instructions.len()).unwrap();
+
+            for node in &paths {
+                let next_node = match instruction {
+                    'R' => self.nodes.get(node.right_neighbour()),
+                    'L' => self.nodes.get(node.left_neighbour()),
+                    _ => return None,
+                };
+
+                if let Some(next_node) = next_node {
+                    next_paths.push(next_node);
+                } else {
+                    return None;
+                }
+            }
+
+            if next_paths.iter().all(|node| node.is_target_node()) {
+                return Some(step + 1);
+            }
+
+            paths = next_paths;
+            step += 1;
+        }
+
+        None
+    }
 }
 
 
