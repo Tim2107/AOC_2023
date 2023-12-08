@@ -25,4 +25,12 @@ impl Node {
     pub fn right_neighbour(&self) -> &str {
         &self.right_neighbour
     }
+
+    pub fn is_start_node(&self) -> bool {
+        self.name.ends_with('A')
+    }
+
+    pub fn is_target_node(&self) -> bool {
+        self.name.ends_with('Z')
+    }
 }

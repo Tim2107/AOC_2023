@@ -1,6 +1,13 @@
 use std::collections::HashMap;
 use crate::day_8::node::Node;
 
+#[derive(Debug)]
+pub enum TraversalError {
+    InvalidInstruction,
+    NodeNotFound,
+    CycleLimitReached(usize),
+}
+
 pub struct Graph {
     nodes: HashMap<String, Node>,
 }
@@ -44,6 +51,48 @@ impl Graph {
         }
         None
     }
+
+    pub fn traverse_all(&self, waypoint_instructions: &str, max_cycles: usize) -> Result<usize, TraversalError> {
+        let start_nodes: Vec<_> = self.nodes.values()
+            .filter(|node| node.is_start_node())
+            .collect();
+
+        let mut paths = start_nodes;
+        let mut current_cycle = 0;
+        let instruction_len = waypoint_instructions.chars().count();
+
+        while current_cycle < max_cycles {
+            for i in 0..instruction_len {
+                let mut next_paths = Vec::new();
+                let instruction = waypoint_instructions.chars().nth(i).unwrap();
+
+                for node in &paths {
+                    let next_node = match instruction {
+                        'R' => self.nodes.get(node.right_neighbour()),
+                        'L' => self.nodes.get(node.left_neighbour()),
+                        _ => return Err(TraversalError::InvalidInstruction),
+                    };
+
+                    if let Some(next_node) = next_node {
+                        next_paths.push(next_node);
+                    } else {
+                        return Err(TraversalError::NodeNotFound);
+                    }
+                }
+
+                if next_paths.iter().all(|node| node.is_target_node()) {
+                    return Ok(current_cycle * instruction_len + i + 1);
+                }
+
+                paths = next_paths;
+            }
+
+            current_cycle += 1;
+        }
+
+        Err(TraversalError::CycleLimitReached(current_cycle))
+    }
+
 }
 
 
@@ -85,6 +134,30 @@ mod tests {
             .expect("Traversal failed");
 
         assert_eq!(traversal_result.1, expected_steps);
+    }
+
+    #[test]
+    fn test_traverse_all() {
+        let file_content = read_file("resources/input_day_8_test_c.txt")
+            .expect("Failed to read test file");
+
+        let waypoint_instructions = parse_waypoint_instructions(&file_content)
+            .expect("Failed to parse waypoint instructions");
+
+        let nodes = parse_nodes(&file_content)
+            .expect("Failed to parse nodes");
+
+        let mut graph = Graph::new();
+        for node in nodes {
+            graph.add_node(node);
+        }
+
+        let max_cycles = 10;
+
+        let traversal_result = graph.traverse_all( &waypoint_instructions, max_cycles)
+            .expect("Traversal failed");
+
+        assert_eq!(traversal_result, 6);
     }
 }
 
