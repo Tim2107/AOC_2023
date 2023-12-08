@@ -2,7 +2,7 @@ mod node;
 mod graph;
 mod parser;
 
-use parser::{read_file, parse_cycle_instruction, parse_nodes};
+use parser::{read_file, parse_waypoint_instructions, parse_nodes};
 pub fn solve_day_8_part_1() -> usize {
     let input_file = "resources/input_day_8.txt";
 
@@ -11,7 +11,7 @@ pub fn solve_day_8_part_1() -> usize {
         Err(_) => panic!("Reading file failed"),
     };
 
-    let cycle_instructions = match parse_cycle_instruction(&file_content) {
+    let waypoint_instructions = match parse_waypoint_instructions(&file_content) {
         Ok(instructions) => instructions,
         Err(_) => panic!("Cycle instructions parsing failed"),
     };
@@ -26,7 +26,7 @@ pub fn solve_day_8_part_1() -> usize {
         graph.add_node(node);
     }
 
-    let traversal_steps = match graph.traverse("AAA", "ZZZ", &cycle_instructions, 10000) {
+    let traversal_steps = match graph.traverse("AAA", "ZZZ", &waypoint_instructions, 10000) {
         Ok(result) => result,
         Err(_) => panic!("Traversal failed"),
     };

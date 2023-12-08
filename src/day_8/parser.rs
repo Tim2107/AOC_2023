@@ -8,13 +8,13 @@ pub fn read_file<P: AsRef<Path>>(file_path: P) -> io::Result<String> {
     fs::read_to_string(file_path)
 }
 
-pub fn parse_cycle_instruction(input: &str) -> Result<String, &'static str> {
+pub fn parse_waypoint_instructions(input: &str) -> Result<String, &'static str> {
     let first_line = input.lines().next().ok_or("Input file is empty")?;
 
     if first_line.trim().chars().all(|c| c == 'R' || c == 'L') {
         Ok(first_line.trim().to_string())
     } else {
-        Err("Cycle instruction contains invalid characters")
+        Err("waypoints contain invalid characters")
     }
 }
 
@@ -49,10 +49,9 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_cycle_instruction() {
+    fn test_parse_waypoin_instructions() {
         let content = read_file("resources/input_day_8_test_a.txt").unwrap();
-        let cycle_instruction = "RL";
-        assert_eq!(parse_cycle_instruction(&content).unwrap(), cycle_instruction);
+        assert_eq!(parse_waypoint_instructions(&content).unwrap(), "RL");
     }
 
     #[test]

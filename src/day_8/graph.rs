@@ -16,11 +16,11 @@ impl Graph {
         self.nodes.insert(node.name().to_string(), node);
     }
 
-    pub fn traverse(&self, start: &str, target: &str, cycle_instructions: &str, max_cycles: usize) -> Option<(String, usize)> {
+    pub fn traverse(&self, start: &str, target: &str, waypoint_instructions: &str, max_cycles: usize) -> Option<(String, usize)> {
         let mut current_node = start;
         let mut current_cycle = 0;
         let mut steps = 0;
-        let instruction_len = cycle_instructions.chars().count();
+        let instruction_len = waypoint_instructions.chars().count();
 
         while current_cycle < max_cycles {
             for i in 0..instruction_len {
@@ -29,7 +29,7 @@ impl Graph {
                         return Some((target.to_string(), steps));
                     }
 
-                    let next_instruction = cycle_instructions.chars().nth(i).unwrap();
+                    let next_instruction = waypoint_instructions.chars().nth(i).unwrap();
                     current_node = match next_instruction {
                         'R' => node.right_neighbour(),
                         'L' => node.left_neighbour(),
@@ -42,18 +42,15 @@ impl Graph {
             }
             current_cycle += 1;
         }
-
-        None // Target not reached within max cycles
+        None
     }
-
 }
 
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::day_8::parser::{read_file, parse_cycle_instruction, parse_nodes};
-
+    use crate::day_8::parser::{read_file, parse_waypoint_instructions, parse_nodes};
 
     #[test]
     fn testcase_a(){
@@ -69,8 +66,8 @@ mod tests {
         let file_content = read_file(testfile_path)
             .expect("Failed to read test file");
 
-        let cycle_instructions = parse_cycle_instruction(&file_content)
-            .expect("Failed to parse cycle instructions");
+        let waypoint_instructions = parse_waypoint_instructions(&file_content)
+            .expect("Failed to parse waypoint instructions");
 
         let nodes = parse_nodes(&file_content)
             .expect("Failed to parse nodes");
@@ -84,7 +81,7 @@ mod tests {
         let target = "ZZZ";
         let max_cycles = 10;
 
-        let traversal_result = graph.traverse(start, target, &cycle_instructions, max_cycles)
+        let traversal_result = graph.traverse(start, target, &waypoint_instructions, max_cycles)
             .expect("Traversal failed");
 
         assert_eq!(traversal_result.1, expected_steps);
