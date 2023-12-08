@@ -2,19 +2,34 @@ mod node;
 mod graph;
 mod parser;
 
-pub fn solve_day_8_part_1() -> usize{
-    let input_file = "resources\\input_day_8.txt";
-    let file_content = parser::read_file(input_file)
-                                .expect("Failed to read test file");
-    let cycle_instructions = parser::parse_cycle_instruction(&file_content)
-                                        .expect("Failed to parse cycle instructions");
-    let nodes = parser::parse_nodes(&file_content)
-                                .expect("Failed to parse nodes");
+use parser::{read_file, parse_cycle_instruction, parse_nodes};
+pub fn solve_day_8_part_1() -> usize {
+    let input_file = "resources/input_day_8.txt";
+
+    let file_content = match read_file(input_file) {
+        Ok(content) => content,
+        Err(_) => panic!("Reading file failed"),
+    };
+
+    let cycle_instructions = match parse_cycle_instruction(&file_content) {
+        Ok(instructions) => instructions,
+        Err(_) => panic!("Cycle instructions parsing failed"),
+    };
+
+    let nodes = match parse_nodes(&file_content) {
+        Ok(nodes) => nodes,
+        Err(_) => panic!("Node parsing failed"),
+    };
+
     let mut graph = graph::Graph::new();
     for node in nodes {
         graph.add_node(node);
     }
-    let traversal_steps = graph.traverse("AAA", "ZZZ", &cycle_instructions, 10000)
-                                            .expect("Traversal failed");
-    traversal_steps.1
+
+    let traversal_steps = match graph.traverse("AAA", "ZZZ", &cycle_instructions, 10000) {
+        Ok(result) => result,
+        Err(_) => panic!("Traversal failed"),
+    };
+
+    traversal_steps
 }
