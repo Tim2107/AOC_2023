@@ -14,7 +14,7 @@ pub fn solve_day_8_part_1() -> usize{
     for node in nodes {
         graph.add_node(node);
     }
-    let traversal_steps = graph.traverse("AAA", "ZZZ", &cycle_instructions, 10)
+    let traversal_steps = graph.traverse("AAA", "ZZZ", &cycle_instructions, 10000)
                                             .expect("Traversal failed");
     traversal_steps.1
 }

@@ -18,31 +18,34 @@ impl Graph {
 
     pub fn traverse(&self, start: &str, target: &str, cycle_instructions: &str, max_cycles: usize) -> Option<(String, usize)> {
         let mut current_node = start;
-        let mut cycles = 0;
-        let mut steps = 0;  // Counter for steps
+        let mut current_cycle = 0;
+        let mut steps = 0;
+        let instruction_len = cycle_instructions.chars().count();
 
-        while cycles < max_cycles {
-            if let Some(node) = self.nodes.get(current_node) {
-                if current_node == target {
-                    return Some((target.to_string(), steps));
+        while current_cycle < max_cycles {
+            for i in 0..instruction_len {
+                if let Some(node) = self.nodes.get(current_node) {
+                    if current_node == target {
+                        return Some((target.to_string(), steps));
+                    }
+
+                    let next_instruction = cycle_instructions.chars().nth(i).unwrap();
+                    current_node = match next_instruction {
+                        'R' => node.right_neighbour(),
+                        'L' => node.left_neighbour(),
+                        _ => return None,
+                    };
+                    steps += 1;
+                } else {
+                    return None;
                 }
-
-                let next_instruction = cycle_instructions.chars().nth(cycles % cycle_instructions.len()).unwrap();
-                current_node = match next_instruction {
-                    'R' => node.right_neighbour(),
-                    'L' => node.left_neighbour(),
-                    _ => return None, // Invalid instruction
-                };
-                steps += 1;  // Increment steps on each move
-            } else {
-                return None; // Current node not found in graph
             }
-
-            cycles += 1;
+            current_cycle += 1;
         }
 
         None // Target not reached within max cycles
     }
+
 }
 
 
