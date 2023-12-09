@@ -1,4 +1,5 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+use crate::utils::math::{least_common_multiple};
 use crate::day_8::node::Node;
 
 #[derive(Debug)]
@@ -52,47 +53,62 @@ impl Graph {
         None
     }
 
-    pub fn traverse_all(&self, waypoint_instructions: &str, max_cycles: usize) -> Result<usize, TraversalError> {
+    pub fn find_overall_step(&self, waypoint_instructions: &str) -> usize {
+        let distances = self.find_target_distances(waypoint_instructions);
+        let mut cycle_lengths: Vec<usize> = Vec::new();
+
+        for (_, target_distances) in distances {
+            if let Some((_, first_distance)) = target_distances.get(0) {
+                if let Some((_, second_distance)) = target_distances.get(1) {
+                    cycle_lengths.push(*first_distance);
+                }
+            }
+        }
+
+        cycle_lengths.into_iter().reduce(|a, b| least_common_multiple(a, b)).unwrap_or(0)
+    }
+
+
+    pub fn find_target_distances(&self, waypoint_instructions: &str) -> HashMap<String, Vec<(String, usize)>> {
+        let mut distances = HashMap::new();
         let start_nodes: Vec<_> = self.nodes.values()
             .filter(|node| node.is_start_node())
             .collect();
 
-        let mut paths = start_nodes;
-        let mut current_cycle = 0;
-        let instruction_len = waypoint_instructions.chars().count();
+        for node in start_nodes {
+            let mut visited_targets = HashSet::new();
+            let mut current_node = node.name();
+            let mut steps_since_last_target = 0;
+            let mut total_steps = 0;
 
-        while current_cycle < max_cycles {
-            for i in 0..instruction_len {
-                let mut next_paths = Vec::new();
-                let instruction = waypoint_instructions.chars().nth(i).unwrap();
+            loop {
+                let instruction = waypoint_instructions.chars().nth(total_steps % waypoint_instructions.len()).unwrap();
+                current_node = match instruction {
+                    'R' => &self.nodes[current_node].right_neighbour(),
+                    'L' => &self.nodes[current_node].left_neighbour(),
+                    _ => panic!("Invalid waypoint instruction"),
+                };
+                total_steps += 1;
+                steps_since_last_target += 1;
 
-                for node in &paths {
-                    let next_node = match instruction {
-                        'R' => self.nodes.get(node.right_neighbour()),
-                        'L' => self.nodes.get(node.left_neighbour()),
-                        _ => return Err(TraversalError::InvalidInstruction),
-                    };
-
-                    if let Some(next_node) = next_node {
-                        next_paths.push(next_node);
-                    } else {
-                        return Err(TraversalError::NodeNotFound);
+                if current_node.ends_with('Z') {
+                    if visited_targets.contains(current_node) {
+                        distances.entry(node.name().to_string())
+                            .or_insert_with(Vec::new)
+                            .push((current_node.to_string(), steps_since_last_target));
+                        break;
                     }
+                    visited_targets.insert(current_node.to_string());
+                    distances.entry(node.name().to_string())
+                        .or_insert_with(Vec::new)
+                        .push((current_node.to_string(), steps_since_last_target));
+                    steps_since_last_target = 0;
                 }
-
-                if next_paths.iter().all(|node| node.is_target_node()) {
-                    return Ok(current_cycle * instruction_len + i + 1);
-                }
-
-                paths = next_paths;
             }
-
-            current_cycle += 1;
         }
 
-        Err(TraversalError::CycleLimitReached(current_cycle))
+        distances
     }
-
 }
 
 
@@ -137,7 +153,7 @@ mod tests {
     }
 
     #[test]
-    fn test_traverse_all() {
+    fn test_find_target_distances() {
         let file_content = read_file("resources/input_day_8_test_c.txt")
             .expect("Failed to read test file");
 
@@ -151,13 +167,33 @@ mod tests {
         for node in nodes {
             graph.add_node(node);
         }
+        let distances = graph.find_target_distances(&waypoint_instructions);
 
-        let max_cycles = 10;
+        for (start_node, target_distances) in distances {
+            println!("Start Node: {}", start_node);
+            for (target, distance) in target_distances {
+                println!(" -> Distance to '{}': {} steps", target, distance);
+            }
+        }
+    }
 
-        let traversal_result = graph.traverse_all( &waypoint_instructions, max_cycles)
-            .expect("Traversal failed");
+    #[test]
+    fn test_find_overall_step() {
+        let file_content = read_file("resources/input_day_8_test_c.txt")
+            .expect("Failed to read test file");
 
-        assert_eq!(traversal_result, 6);
+        let waypoint_instructions = parse_waypoint_instructions(&file_content)
+            .expect("Failed to parse waypoint instructions");
+
+        let nodes = parse_nodes(&file_content)
+            .expect("Failed to parse nodes");
+
+        let mut graph = Graph::new();
+        for node in nodes {
+            graph.add_node(node);
+        }
+        let overall_step = graph.find_overall_step(&waypoint_instructions);
+        assert_eq!(overall_step,6);
     }
 }
 

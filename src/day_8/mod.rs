@@ -3,7 +3,7 @@ mod graph;
 mod parser;
 
 use parser::{read_file, parse_waypoint_instructions, parse_nodes};
-use crate::day_8::graph::TraversalError;
+use crate::day_8::graph::Graph;
 
 pub fn solve_day_8_part_1() -> usize {
     let input_file = "resources/input_day_8.txt";
@@ -37,38 +37,21 @@ pub fn solve_day_8_part_1() -> usize {
 }
 
 pub fn solve_day_8_part_2() -> usize {
+    let file_content = read_file("resources/input_day_8.txt")
+        .expect("Failed to read test file");
 
-    let input_file = "resources/input_day_8.txt";
+    let waypoint_instructions = parse_waypoint_instructions(&file_content)
+        .expect("Failed to parse waypoint instructions");
 
-    let file_content = match read_file(input_file) {
-        Ok(content) => content,
-        Err(_) => panic!("Reading file failed"),
-    };
+    let nodes = parse_nodes(&file_content)
+        .expect("Failed to parse nodes");
 
-    let waypoint_instructions = match parse_waypoint_instructions(&file_content) {
-        Ok(instructions) => instructions,
-        Err(_) => panic!("Cycle instructions parsing failed"),
-    };
-
-    let nodes = match parse_nodes(&file_content) {
-        Ok(nodes) => nodes,
-        Err(_) => panic!("Node parsing failed"),
-    };
-
-    let mut graph = graph::Graph::new();
+    let mut graph = Graph::new();
     for node in nodes {
         graph.add_node(node);
     }
 
-    let simultanious_traversal_steps = match graph.traverse_all(&waypoint_instructions, 500000) {
-        Ok(result) => result,
-        Err(TraversalError::InvalidInstruction) => panic!("Invalid instruction encountered during traversal"),
-        Err(TraversalError::NodeNotFound) => panic!("Node not found during traversal"),
-        Err(TraversalError::CycleLimitReached(cycle)) => {
-                panic!("Traversal failed: Cycle limit reached at cycle {}", cycle);
-        }
-    };
+    let steps_to_simultaneous_end_nodes = graph.find_overall_step(&waypoint_instructions);
 
-
-    simultanious_traversal_steps
+    steps_to_simultaneous_end_nodes
 }

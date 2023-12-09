@@ -1,3 +1,4 @@
+mod utils;
 mod day_8;
 
 fn main() {
