@@ -1,12 +1,4 @@
-use std::fs;
-use std::io;
-use std::path::Path;
-
 use crate::day_8::node::Node;
-
-pub fn read_file<P: AsRef<Path>>(file_path: P) -> io::Result<String> {
-    fs::read_to_string(file_path)
-}
 
 pub fn parse_waypoint_instructions(input: &str) -> Result<String, &'static str> {
     let first_line = input.lines().next().ok_or("Input file is empty")?;
@@ -41,6 +33,7 @@ pub fn parse_nodes(input: &str) -> Result<Vec<Node>, &'static str> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::utils::input_output::read_file;
 
     #[test]
     fn test_read_file() {

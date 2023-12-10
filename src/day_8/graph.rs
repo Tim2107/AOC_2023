@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
-use crate::utils::math::{least_common_multiple};
-use crate::day_8::parser::{parse_waypoint_instructions, parse_nodes};
+use crate::utils::math::least_common_multiple;
+use crate::day_8::parser::{parse_nodes, parse_waypoint_instructions};
 use crate::day_8::node::Node;
 
 #[derive(Debug)]
@@ -127,7 +127,7 @@ impl Graph {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::day_8::parser::{read_file};
+    use crate::utils::input_output::read_file;
 
     #[test]
     fn testcase_a(){

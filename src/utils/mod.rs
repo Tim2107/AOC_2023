@@ -1,2 +1,2 @@
 pub mod math;
-mod input_output;
+pub mod input_output;

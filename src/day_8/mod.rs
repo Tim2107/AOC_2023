@@ -2,7 +2,7 @@ mod node;
 mod graph;
 mod parser;
 
-use parser::read_file;
+use crate::utils::input_output::read_file;
 use graph::Graph;
 
 pub fn solve_day_8() -> Result<(usize, usize), Box<dyn std::error::Error>> {
