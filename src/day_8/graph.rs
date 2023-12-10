@@ -60,7 +60,11 @@ impl Graph {
         for (_, target_distances) in distances {
             if let Some((_, first_distance)) = target_distances.get(0) {
                 if let Some((_, second_distance)) = target_distances.get(1) {
-                    cycle_lengths.push(*first_distance);
+                    if(first_distance==second_distance){
+                        cycle_lengths.push(*first_distance);
+                    } else {
+                        cycle_lengths.push(*first_distance + *second_distance)
+                    }
                 }
             }
         }
