@@ -1,14 +1,27 @@
 use crate::day_8::node::Node;
 
-pub fn parse_waypoint_instructions(input: &str) -> Result<String, &'static str> {
-    let first_line = input.lines().next().ok_or("Input file is empty")?;
+use crate::day_8::errors::WaypointInstructionError;
 
-    if first_line.trim().chars().all(|c| c == 'R' || c == 'L') {
-        Ok(first_line.trim().to_string())
+pub fn parse_waypoint_instructions(input: &str) -> Result<String, WaypointInstructionError> {
+    let first_line = input.lines()
+        .next()
+        .map(str::trim)
+        .ok_or(WaypointInstructionError::EmptyInput)?
+        .to_string();
+
+    validate_waypoint_instructions(&first_line)?;
+
+    Ok(first_line)
+}
+
+fn validate_waypoint_instructions(instruction: &str) -> Result<(), WaypointInstructionError> {
+    if instruction.chars().all(|c| c == 'R' || c == 'L') {
+        Ok(())
     } else {
-        Err("waypoints contain invalid characters")
+        Err(WaypointInstructionError::InvalidCharacter)
     }
 }
+
 
 pub fn parse_nodes(input: &str) -> Result<Vec<Node>, &'static str> {
     input.lines()

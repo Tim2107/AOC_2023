@@ -9,7 +9,7 @@ pub struct Graph {
 }
 
 impl Graph {
-    pub fn new(input: &str) -> Result<Graph, String> {
+    pub fn new(input: &str) -> Result<Graph, Box<dyn std::error::Error>> {
         let waypoint_instructions = parse_waypoint_instructions(input)?;
         let parsed_nodes = parse_nodes(input)?;
         let mut nodes = HashMap::new();
