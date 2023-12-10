@@ -5,10 +5,8 @@ mod parser;
 use parser::read_file;
 use graph::Graph;
 
-pub fn solve_day_8() -> Result<(usize, usize), String> {
-    let graph_input = read_file("resources/input_day_8.txt")
-        .map_err(|err| format!("Failed to read file: {}", err))?;
-
+pub fn solve_day_8() -> Result<(usize, usize), Box<dyn std::error::Error>> {
+    let graph_input = read_file("resources/input_day_8.txt")?;
     let graph = Graph::new(&graph_input)?;
 
     let part_1_steps = graph.traverse("AAA", "ZZZ", 10000)

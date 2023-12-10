@@ -17,12 +17,8 @@ pub struct Graph {
 
 impl Graph {
     pub fn new(input: &str) -> Result<Graph, String> {
-        let waypoint_instructions = parse_waypoint_instructions(input)
-            .map_err(|e| e.to_string())?;
-
-        let parsed_nodes = parse_nodes(input)
-            .map_err(|e| e.to_string())?;
-
+        let waypoint_instructions = parse_waypoint_instructions(input)?;
+        let parsed_nodes = parse_nodes(input)?;
         let mut nodes = HashMap::new();
         for node in parsed_nodes {
             nodes.insert(node.name().to_string(), node);
