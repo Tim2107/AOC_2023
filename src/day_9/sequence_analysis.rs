@@ -1,5 +1,18 @@
 use crate::day_9;
 
+pub fn analyze_and_predict_next_numbers(sequences: Vec<Vec<i32>>) -> Vec<i32> {
+    let mut predictions = Vec::new();
+
+    for sequence in sequences {
+        let difference_sequences = calculate_complete_difference_sequences(&sequence);
+        let next_number = extrapolate_next_number(&difference_sequences);
+        predictions.push(next_number);
+    }
+
+    predictions
+}
+
+
 pub fn extrapolate_next_number(sequences: &[Vec<i32>]) -> i32 {
     let mut next_number = 0;
     for sequence in sequences.iter().rev() {
@@ -78,4 +91,12 @@ mod tests{
         let extrapolated_number = extrapolate_next_number(&calculated_sequences);
         assert_eq!(extrapolated_number, expected_result);
      }
+
+    #[test]
+    fn test_analyze_and_predict_next_numbers(){
+        let expected_numbers = vec![18,28,68];
+        let sequences_to_analyze = parse_sequences_from_file("resources/input_day_9_test.txt").unwrap();
+        let next_numbers = analyze_and_predict_next_numbers(sequences_to_analyze);
+        assert_eq!(next_numbers, expected_numbers);
+    }
 }
