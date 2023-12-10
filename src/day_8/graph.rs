@@ -1,4 +1,6 @@
 use std::collections::{HashMap, HashSet};
+use anyhow::{Result};
+use crate::day_8::errors::{Day8ParsingError, GraphError};
 use crate::utils::math::least_common_multiple;
 use crate::day_8::parser::{parse_nodes, parse_waypoint_instructions};
 use crate::day_8::node::Node;
@@ -23,13 +25,13 @@ impl Graph {
         })
     }
 
-    pub fn traverse(&self, start: &str, target: &str, max_cycles: usize) -> Result<usize, String> {
+    pub fn count_steps_to_target(&self, start: &str, target: &str, max_waypoint_iterations: usize) -> Result<usize> {
         let mut current_node = start;
-        let mut current_cycle = 0;
+        let mut current_iteration = 0;
         let mut steps = 0;
         let instruction_len = self.waypoint_instructions.chars().count();
 
-        while current_cycle < max_cycles {
+        while current_iteration < max_waypoint_iterations {
             for i in 0..instruction_len {
                 let next_node = self.get_next_node(current_node, self.waypoint_instructions.chars().nth(i).unwrap())?;
                 current_node = next_node.name();
@@ -39,13 +41,13 @@ impl Graph {
                 }
                 steps += 1;
             }
-            current_cycle += 1;
+            current_iteration += 1;
         }
 
-        Err("Target not reached within maximum cycles".to_string())
+        Err(GraphError::TargetNotReachedWithinIterations.into())
     }
 
-    pub fn find_overall_step(&self) ->  Result<usize, String> {
+    pub fn find_overall_step(&self) ->  Result<usize> {
         let distances = self.find_target_distances()?;
         let mut cycle_lengths: Vec<usize> = Vec::new();
 
@@ -64,7 +66,7 @@ impl Graph {
         Ok(cycle_lengths.into_iter().reduce(|a, b| least_common_multiple(a, b)).unwrap_or(0))
     }
 
-    pub fn find_target_distances(&self) -> Result<HashMap<String, Vec<(String, usize)>>, String> {
+    pub fn find_target_distances(&self) -> Result<HashMap<String, Vec<(String, usize)>>> {
         let mut distances = HashMap::new();
         let start_nodes: Vec<_> = self.nodes.values()
             .filter(|node| node.is_start_node())
@@ -102,18 +104,19 @@ impl Graph {
         Ok(distances)
     }
 
-    fn get_next_node(&self, current_node: &str, instruction: char) -> Result<&Node, String> {
+    fn get_next_node(&self, current_node: &str, instruction: char) -> Result<&Node> {
         let node = self.nodes.get(current_node)
-            .ok_or_else(|| "Current node not found in the graph".to_string())?;
+            .ok_or_else(|| GraphError::NodeNotFound(current_node.to_string()))?;
 
         match instruction {
             'R' => self.nodes.get(node.right_neighbour())
-                .ok_or_else(|| "Right neighbor not found".to_string()),
+                .ok_or_else(|| GraphError::NeighbourNodeNotFound { node: current_node.to_string(), neighbour: "right".to_string() }.into()),
             'L' => self.nodes.get(node.left_neighbour())
-                .ok_or_else(|| "Left neighbor not found".to_string()),
-            _ => Err("Cannot get next node -> waypoint instruction is invalid.".to_string()),
+                .ok_or_else(|| GraphError::NeighbourNodeNotFound { node: current_node.to_string(), neighbour: "left".to_string() }.into()),
+            _ => Err(Day8ParsingError::InvalidWaypointInstruction.into()),
         }
     }
+
 }
 
 #[cfg(test)]
