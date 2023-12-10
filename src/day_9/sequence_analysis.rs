@@ -4,16 +4,25 @@ pub fn sum_of_predictions(predictions: &[i32]) -> i32 {
     predictions.iter().sum()
 }
 
-pub fn analyze_and_predict_next_numbers(sequences: Vec<Vec<i32>>) -> Vec<i32> {
-    let mut predictions = Vec::new();
+pub fn analyze_and_predict_next_numbers(sequences: &[Vec<i32>]) -> Vec<i32> {
+    analyze_and_predict_numbers(sequences, extrapolate_next_number)
+}
 
-    for sequence in sequences {
-        let difference_sequences = calculate_complete_difference_sequences(&sequence);
-        let next_number = extrapolate_next_number(&difference_sequences);
-        predictions.push(next_number);
-    }
+pub fn analyze_and_predict_preceeding_numbers(sequences: &[Vec<i32>]) -> Vec<i32> {
+    analyze_and_predict_numbers(sequences, extrapolate_preceeding_number)
+}
 
-    predictions
+pub fn analyze_and_predict_numbers<F>(sequences: &[Vec<i32>], extrapolate: F) -> Vec<i32>
+    where
+        F: Fn(&[Vec<i32>]) -> i32
+{
+    sequences
+        .into_iter()
+        .map(|sequence| {
+            let difference_sequences = calculate_complete_difference_sequences(&sequence);
+            extrapolate(&difference_sequences)
+        })
+        .collect()
 }
 
 pub fn extrapolate_next_number(sequences: &[Vec<i32>]) -> i32 {
@@ -24,6 +33,16 @@ pub fn extrapolate_next_number(sequences: &[Vec<i32>]) -> i32 {
 
     next_number
 }
+
+pub fn extrapolate_preceeding_number(sequences: &[Vec<i32>]) -> i32 {
+    let mut preceeding_number = 0;
+    for sequence in sequences.iter().rev() {
+        preceeding_number   = sequence.first().copied().unwrap_or_default() - preceeding_number;
+    }
+
+    preceeding_number
+}
+
 
 pub fn calculate_complete_difference_sequences(sequence: &[i32]) -> Vec<Vec<i32>> {
     let mut sequences = vec![sequence.to_vec()];
@@ -96,17 +115,44 @@ mod tests{
      }
 
     #[test]
+    fn test_extrapolate_preceeding_number_a(){test_extrapolate_preceeding_number_helper(0, -3);
+    }
+
+    #[test]
+    fn test_extrapolate_preceeding_number_b(){test_extrapolate_preceeding_number_helper(1, 0);
+    }
+
+    #[test]
+    fn test_extrapolate_preceeding_number_c(){test_extrapolate_preceeding_number_helper(2, 5);
+    }
+
+    fn test_extrapolate_preceeding_number_helper(test_sequence: usize, expected_result: i32){
+        let sequences_to_analyze = parse_sequences_from_file("resources/input_day_9_test.txt").unwrap();
+        let calculated_sequences = calculate_complete_difference_sequences(&sequences_to_analyze[test_sequence]);
+        let extrapolated_number = extrapolate_preceeding_number(&calculated_sequences);
+        assert_eq!(extrapolated_number, expected_result);
+    }
+
+    #[test]
     fn test_analyze_and_predict_next_numbers(){
         let expected_numbers = vec![18,28,68];
         let sequences_to_analyze = parse_sequences_from_file("resources/input_day_9_test.txt").unwrap();
-        let next_numbers = analyze_and_predict_next_numbers(sequences_to_analyze);
+        let next_numbers = analyze_and_predict_next_numbers(&sequences_to_analyze);
         assert_eq!(next_numbers, expected_numbers);
+    }
+
+    #[test]
+    fn test_analyze_and_predict_preceeding_numbers(){
+        let expected_numbers = vec![-3,0,5];
+        let sequences_to_analyze = parse_sequences_from_file("resources/input_day_9_test.txt").unwrap();
+        let preceeding_numbers = analyze_and_predict_preceeding_numbers(&sequences_to_analyze);
+        assert_eq!(preceeding_numbers, expected_numbers);
     }
 
     #[test]
     fn test_sum_of_predictions(){
         let sequences_to_analyze = parse_sequences_from_file("resources/input_day_9_test.txt").unwrap();
-        let next_numbers = analyze_and_predict_next_numbers(sequences_to_analyze);
+        let next_numbers = analyze_and_predict_next_numbers(&sequences_to_analyze);
         let sum_of_extrapolated_numbers = sum_of_predictions(&next_numbers);
         assert_eq!(sum_of_extrapolated_numbers, 114);
     }

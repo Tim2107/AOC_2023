@@ -15,8 +15,9 @@ fn main() {
     println!();
 
     match day_9::solve_day_9() {
-        Ok(part_q1_sum) => {
-            println!("Day 9, Part 1: The sum of the extrapolated numbers is {}", part_q1_sum);
+        Ok((part_1_sum,part_2_sum)) => {
+            println!("Day 9, Part 1: The sum of the extrapolated next numbers is {}", part_1_sum);
+            println!("Day 9, Part 2: The sum of the extrapolated preceding numbers is {}", part_2_sum);
         },
         Err(err) => { eprintln!("Error solving Day 9: {}", err); }
     }
