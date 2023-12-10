@@ -47,7 +47,7 @@ impl Graph {
         Err(GraphError::TargetNotReachedWithinIterations.into())
     }
 
-    pub fn find_overall_step(&self) ->  Result<usize> {
+    pub fn count_steps_to_common_termination_condition(&self) ->  Result<usize> {
         let distances = self.find_target_distances()?;
         let mut cycle_lengths: Vec<usize> = Vec::new();
 
