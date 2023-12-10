@@ -1,5 +1,6 @@
 mod utils;
 mod day_8;
+mod day_9;
 
 fn main() {
 

@@ -136,23 +136,23 @@ mod tests {
 
     fn test_add_and_traverse_graph_helper(testfile_path: &str, expected_steps: usize ) {
 
-        let mut graph = Graph::new(&read_file(testfile_path).unwrap());
+        let graph = Graph::new(&read_file(testfile_path).unwrap()).unwrap();
 
         let start = "AAA";
         let target = "ZZZ";
         let max_cycles = 10;
 
-        let traversal_result = graph.traverse(start, target, max_cycles)
+        let traversal_result = graph.count_steps_to_target(start, target, max_cycles)
             .expect("Traversal failed");
 
-        assert_eq!(traversal_result.1, expected_steps);
+        assert_eq!(traversal_result, expected_steps);
     }
 
     #[test]
     fn test_find_target_distances() {
 
-        let mut graph = Graph::new(&read_file("resources/input_day_8_test_c.txt").unwrap());
-        let distances = graph.find_target_distances();
+        let graph = Graph::new(&read_file("resources/input_day_8_test_c.txt").unwrap()).unwrap();
+        let distances = graph.find_target_distances().unwrap();
 
         for (start_node, target_distances) in distances {
             println!("Start Node: {}", start_node);
@@ -164,9 +164,9 @@ mod tests {
 
     #[test]
     fn test_find_overall_step() {
-        let mut graph = Graph::new(&read_file("resources/input_day_8_test_c.txt").unwrap());
-        let overall_step = graph.find_overall_step();
-        assert_eq!(overall_step,6);
+        let graph = Graph::new(&read_file("resources/input_day_8_test_c.txt").unwrap()).unwrap();
+        let step_count = graph.count_steps_to_common_termination_condition().unwrap();
+        assert_eq!(step_count, 6);
     }
 }
 
