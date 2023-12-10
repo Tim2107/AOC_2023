@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use crate::utils::math::{least_common_multiple};
+use crate::day_8::parser::{parse_waypoint_instructions, parse_nodes};
 use crate::day_8::node::Node;
 
 #[derive(Debug)]
@@ -11,24 +12,33 @@ pub enum TraversalError {
 
 pub struct Graph {
     nodes: HashMap<String, Node>,
+    waypoint_instructions: String,
 }
 
 impl Graph {
-    pub fn new() -> Self {
-        Graph {
-            nodes: HashMap::new(),
+    pub fn new(input: &str) -> Result<Graph, String> {
+        let waypoint_instructions = parse_waypoint_instructions(input)
+            .map_err(|e| e.to_string())?;
+
+        let parsed_nodes = parse_nodes(input)
+            .map_err(|e| e.to_string())?;
+
+        let mut nodes = HashMap::new();
+        for node in parsed_nodes {
+            nodes.insert(node.name().to_string(), node);
         }
+
+        Ok(Graph {
+            nodes,
+            waypoint_instructions,
+        })
     }
 
-    pub fn add_node(&mut self, node: Node) {
-        self.nodes.insert(node.name().to_string(), node);
-    }
-
-    pub fn traverse(&self, start: &str, target: &str, waypoint_instructions: &str, max_cycles: usize) -> Option<(String, usize)> {
+    pub fn traverse(&self, start: &str, target: &str, max_cycles: usize) -> Option<(String, usize)> {
         let mut current_node = start;
         let mut current_cycle = 0;
         let mut steps = 0;
-        let instruction_len = waypoint_instructions.chars().count();
+        let instruction_len = self.waypoint_instructions.chars().count();
 
         while current_cycle < max_cycles {
             for i in 0..instruction_len {
@@ -37,7 +47,7 @@ impl Graph {
                         return Some((target.to_string(), steps));
                     }
 
-                    let next_instruction = waypoint_instructions.chars().nth(i).unwrap();
+                    let next_instruction = self.waypoint_instructions.chars().nth(i).unwrap();
                     current_node = match next_instruction {
                         'R' => node.right_neighbour(),
                         'L' => node.left_neighbour(),
@@ -53,8 +63,8 @@ impl Graph {
         None
     }
 
-    pub fn find_overall_step(&self, waypoint_instructions: &str) -> usize {
-        let distances = self.find_target_distances(waypoint_instructions);
+    pub fn find_overall_step(&self) -> usize {
+        let distances = self.find_target_distances();
         let mut cycle_lengths: Vec<usize> = Vec::new();
 
         for (_, target_distances) in distances {
@@ -73,7 +83,7 @@ impl Graph {
     }
 
 
-    pub fn find_target_distances(&self, waypoint_instructions: &str) -> HashMap<String, Vec<(String, usize)>> {
+    pub fn find_target_distances(&self) -> HashMap<String, Vec<(String, usize)>> {
         let mut distances = HashMap::new();
         let start_nodes: Vec<_> = self.nodes.values()
             .filter(|node| node.is_start_node())
@@ -86,7 +96,7 @@ impl Graph {
             let mut total_steps = 0;
 
             loop {
-                let instruction = waypoint_instructions.chars().nth(total_steps % waypoint_instructions.len()).unwrap();
+                let instruction = self.waypoint_instructions.chars().nth(total_steps % self.waypoint_instructions.len()).unwrap();
                 current_node = match instruction {
                     'R' => &self.nodes[current_node].right_neighbour(),
                     'L' => &self.nodes[current_node].left_neighbour(),
@@ -119,7 +129,7 @@ impl Graph {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::day_8::parser::{read_file, parse_waypoint_instructions, parse_nodes};
+    use crate::day_8::parser::{read_file};
 
     #[test]
     fn testcase_a(){
@@ -132,25 +142,14 @@ mod tests {
     }
 
     fn test_add_and_traverse_graph_helper(testfile_path: &str, expected_steps: usize ) {
-        let file_content = read_file(testfile_path)
-            .expect("Failed to read test file");
 
-        let waypoint_instructions = parse_waypoint_instructions(&file_content)
-            .expect("Failed to parse waypoint instructions");
-
-        let nodes = parse_nodes(&file_content)
-            .expect("Failed to parse nodes");
-
-        let mut graph = Graph::new();
-        for node in nodes {
-            graph.add_node(node);
-        }
+        let mut graph = Graph::new(&read_file(testfile_path).unwrap());
 
         let start = "AAA";
         let target = "ZZZ";
         let max_cycles = 10;
 
-        let traversal_result = graph.traverse(start, target, &waypoint_instructions, max_cycles)
+        let traversal_result = graph.traverse(start, target, max_cycles)
             .expect("Traversal failed");
 
         assert_eq!(traversal_result.1, expected_steps);
@@ -158,20 +157,9 @@ mod tests {
 
     #[test]
     fn test_find_target_distances() {
-        let file_content = read_file("resources/input_day_8_test_c.txt")
-            .expect("Failed to read test file");
 
-        let waypoint_instructions = parse_waypoint_instructions(&file_content)
-            .expect("Failed to parse waypoint instructions");
-
-        let nodes = parse_nodes(&file_content)
-            .expect("Failed to parse nodes");
-
-        let mut graph = Graph::new();
-        for node in nodes {
-            graph.add_node(node);
-        }
-        let distances = graph.find_target_distances(&waypoint_instructions);
+        let mut graph = Graph::new(&read_file("resources/input_day_8_test_c.txt").unwrap());
+        let distances = graph.find_target_distances();
 
         for (start_node, target_distances) in distances {
             println!("Start Node: {}", start_node);
@@ -183,20 +171,8 @@ mod tests {
 
     #[test]
     fn test_find_overall_step() {
-        let file_content = read_file("resources/input_day_8_test_c.txt")
-            .expect("Failed to read test file");
-
-        let waypoint_instructions = parse_waypoint_instructions(&file_content)
-            .expect("Failed to parse waypoint instructions");
-
-        let nodes = parse_nodes(&file_content)
-            .expect("Failed to parse nodes");
-
-        let mut graph = Graph::new();
-        for node in nodes {
-            graph.add_node(node);
-        }
-        let overall_step = graph.find_overall_step(&waypoint_instructions);
+        let mut graph = Graph::new(&read_file("resources/input_day_8_test_c.txt").unwrap());
+        let overall_step = graph.find_overall_step();
         assert_eq!(overall_step,6);
     }
 }

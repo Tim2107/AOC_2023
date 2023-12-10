@@ -2,56 +2,20 @@ mod node;
 mod graph;
 mod parser;
 
-use parser::{read_file, parse_waypoint_instructions, parse_nodes};
-use crate::day_8::graph::Graph;
+use parser::read_file;
+use graph::Graph;
 
-pub fn solve_day_8_part_1() -> usize {
-    let input_file = "resources/input_day_8.txt";
+pub fn solve_day_8() -> Result<(usize, usize), String> {
+    let graph_input = read_file("resources/input_day_8.txt")
+        .map_err(|err| format!("Failed to read file: {}", err))?;
 
-    let file_content = match read_file(input_file) {
-        Ok(content) => content,
-        Err(_) => panic!("Reading file failed"),
-    };
+    let graph = Graph::new(&graph_input)?;
 
-    let waypoint_instructions = match parse_waypoint_instructions(&file_content) {
-        Ok(instructions) => instructions,
-        Err(_) => panic!("Cycle instructions parsing failed"),
-    };
+    let part_1_steps = graph.traverse("AAA", "ZZZ", 10000)
+        .ok_or("Traversal failed for part 1")?.1;
+    let part_2_steps = graph.find_overall_step();
 
-    let nodes = match parse_nodes(&file_content) {
-        Ok(nodes) => nodes,
-        Err(_) => panic!("Node parsing failed"),
-    };
-
-    let mut graph = graph::Graph::new();
-    for node in nodes {
-        graph.add_node(node);
-    }
-
-    let traversal_steps = match graph.traverse("AAA", "ZZZ", &waypoint_instructions, 10000) {
-        Some(result) => result,
-        None => panic!("Traversal failed"),
-    };
-
-    traversal_steps.1
+    Ok((part_1_steps, part_2_steps))
 }
 
-pub fn solve_day_8_part_2() -> usize {
-    let file_content = read_file("resources/input_day_8.txt")
-        .expect("Failed to read test file");
 
-    let waypoint_instructions = parse_waypoint_instructions(&file_content)
-        .expect("Failed to parse waypoint instructions");
-
-    let nodes = parse_nodes(&file_content)
-        .expect("Failed to parse nodes");
-
-    let mut graph = Graph::new();
-    for node in nodes {
-        graph.add_node(node);
-    }
-
-    let steps_to_simultaneous_end_nodes = graph.find_overall_step(&waypoint_instructions);
-
-    steps_to_simultaneous_end_nodes
-}
