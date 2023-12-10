@@ -1,8 +1,20 @@
 mod utils;
 mod day_8;
 mod day_9;
+mod day_1;
 
 fn main() {
+
+    match day_1::solve_day_1() {
+        Ok(part_1_sum) => {
+            println!("Day 1, Part 1: The sum is {}", part_1_sum);
+            //println!("Day 8, Part 2: {} steps", part_2_steps);
+        },
+        Err(err) => { eprintln!("Error solving Day 1: {}", err); }
+    }
+
+    println!();
+
 
     match day_8::solve_day_8() {
         Ok((part_1_steps, part_2_steps)) => {

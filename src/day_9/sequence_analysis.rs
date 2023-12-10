@@ -1,4 +1,4 @@
-use crate::day_9;
+use crate::day_9::parser::{parse_sequences_from_file};
 
 pub fn sum_of_predictions(predictions: &[i32]) -> i32 {
     predictions.iter().sum()
@@ -65,7 +65,6 @@ pub fn calculate_differences(sequence: &[i32]) -> Vec<i32> {
 #[cfg(test)]
 mod tests{
     use super::*;
-    use day_9::parser::parse_sequences_from_file;
 
     #[test]
     fn test_calculate_differences(){
