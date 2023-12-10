@@ -30,7 +30,7 @@ impl Graph {
         })
     }
 
-    pub fn traverse(&self, start: &str, target: &str, max_cycles: usize) -> Result<(String, usize), String> {
+    pub fn traverse(&self, start: &str, target: &str, max_cycles: usize) -> Result<usize, String> {
         let mut current_node = start;
         let mut current_cycle = 0;
         let mut steps = 0;
@@ -42,7 +42,7 @@ impl Graph {
                 current_node = next_node.name();
 
                 if current_node == target {
-                    return Ok((target.to_string(), steps));
+                    return Ok(steps);
                 }
                 steps += 1;
             }
@@ -52,8 +52,8 @@ impl Graph {
         Err("Target not reached within maximum cycles".to_string())
     }
 
-    pub fn find_overall_step(&self) -> usize {
-        let distances = self.find_target_distances();
+    pub fn find_overall_step(&self) ->  Result<usize, String> {
+        let distances = self.find_target_distances()?;
         let mut cycle_lengths: Vec<usize> = Vec::new();
 
         for (_, target_distances) in distances {
@@ -68,11 +68,11 @@ impl Graph {
             }
         }
 
-        cycle_lengths.into_iter().reduce(|a, b| least_common_multiple(a, b)).unwrap_or(0)
+        Ok(cycle_lengths.into_iter().reduce(|a, b| least_common_multiple(a, b)).unwrap_or(0))
     }
 
 
-    pub fn find_target_distances(&self) -> HashMap<String, Vec<(String, usize)>> {
+    pub fn find_target_distances(&self) -> Result<HashMap<String, Vec<(String, usize)>>, String> {
         let mut distances = HashMap::new();
         let start_nodes: Vec<_> = self.nodes.values()
             .filter(|node| node.is_start_node())
@@ -86,11 +86,8 @@ impl Graph {
 
             loop {
                 let instruction = self.waypoint_instructions.chars().nth(total_steps % self.waypoint_instructions.len()).unwrap();
-                current_node = match instruction {
-                    'R' => &self.nodes[current_node].right_neighbour(),
-                    'L' => &self.nodes[current_node].left_neighbour(),
-                    _ => panic!("Invalid waypoint instruction"),
-                };
+                let next_node = self.get_next_node(current_node, instruction)?;
+                current_node = next_node.name();
                 total_steps += 1;
                 steps_since_last_target += 1;
 
@@ -110,7 +107,7 @@ impl Graph {
             }
         }
 
-        distances
+        Ok(distances)
     }
 
     fn get_next_node(&self, current_node: &str, instruction: char) -> Result<&Node, String> {
@@ -126,9 +123,6 @@ impl Graph {
         }
     }
 }
-
-
-
 
 #[cfg(test)]
 mod tests {
