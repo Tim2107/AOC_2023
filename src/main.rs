@@ -11,4 +11,13 @@ fn main() {
         },
         Err(err) => { eprintln!("Error solving Day 8: {}", err); }
     }
+
+    println!();
+
+    match day_9::solve_day_9() {
+        Ok(part_q1_sum) => {
+            println!("Day 9, Part 1: The sum of the extrapolated numbers is {}", part_q1_sum);
+        },
+        Err(err) => { eprintln!("Error solving Day 9: {}", err); }
+    }
 }

@@ -1,5 +1,9 @@
 use crate::day_9;
 
+pub fn sum_of_predictions(predictions: &[i32]) -> i32 {
+    predictions.iter().sum()
+}
+
 pub fn analyze_and_predict_next_numbers(sequences: Vec<Vec<i32>>) -> Vec<i32> {
     let mut predictions = Vec::new();
 
@@ -11,7 +15,6 @@ pub fn analyze_and_predict_next_numbers(sequences: Vec<Vec<i32>>) -> Vec<i32> {
 
     predictions
 }
-
 
 pub fn extrapolate_next_number(sequences: &[Vec<i32>]) -> i32 {
     let mut next_number = 0;
@@ -98,5 +101,13 @@ mod tests{
         let sequences_to_analyze = parse_sequences_from_file("resources/input_day_9_test.txt").unwrap();
         let next_numbers = analyze_and_predict_next_numbers(sequences_to_analyze);
         assert_eq!(next_numbers, expected_numbers);
+    }
+
+    #[test]
+    fn test_sum_of_predictions(){
+        let sequences_to_analyze = parse_sequences_from_file("resources/input_day_9_test.txt").unwrap();
+        let next_numbers = analyze_and_predict_next_numbers(sequences_to_analyze);
+        let sum_of_extrapolated_numbers = sum_of_predictions(&next_numbers);
+        assert_eq!(sum_of_extrapolated_numbers, 114);
     }
 }
