@@ -3,13 +3,6 @@ use crate::utils::math::least_common_multiple;
 use crate::day_8::parser::{parse_nodes, parse_waypoint_instructions};
 use crate::day_8::node::Node;
 
-#[derive(Debug)]
-pub enum TraversalError {
-    InvalidInstruction,
-    NodeNotFound,
-    CycleLimitReached(usize),
-}
-
 pub struct Graph {
     nodes: HashMap<String, Node>,
     waypoint_instructions: String,
@@ -59,7 +52,7 @@ impl Graph {
         for (_, target_distances) in distances {
             if let Some((_, first_distance)) = target_distances.get(0) {
                 if let Some((_, second_distance)) = target_distances.get(1) {
-                    if(first_distance==second_distance){
+                    if first_distance==second_distance{
                         cycle_lengths.push(*first_distance);
                     } else {
                         cycle_lengths.push(*first_distance + *second_distance)
@@ -71,7 +64,6 @@ impl Graph {
         Ok(cycle_lengths.into_iter().reduce(|a, b| least_common_multiple(a, b)).unwrap_or(0))
     }
 
-
     pub fn find_target_distances(&self) -> Result<HashMap<String, Vec<(String, usize)>>, String> {
         let mut distances = HashMap::new();
         let start_nodes: Vec<_> = self.nodes.values()
@@ -80,28 +72,28 @@ impl Graph {
 
         for node in start_nodes {
             let mut visited_targets = HashSet::new();
-            let mut current_node = node.name();
+            let mut current_node_name = node.name();
             let mut steps_since_last_target = 0;
             let mut total_steps = 0;
 
             loop {
                 let instruction = self.waypoint_instructions.chars().nth(total_steps % self.waypoint_instructions.len()).unwrap();
-                let next_node = self.get_next_node(current_node, instruction)?;
-                current_node = next_node.name();
+                let next_node = self.get_next_node(current_node_name, instruction)?;
+                current_node_name = next_node.name();
                 total_steps += 1;
                 steps_since_last_target += 1;
 
-                if current_node.ends_with('Z') {
-                    if visited_targets.contains(current_node) {
+                if next_node.is_target_node() {
+                    if visited_targets.contains(current_node_name) {
                         distances.entry(node.name().to_string())
                             .or_insert_with(Vec::new)
-                            .push((current_node.to_string(), steps_since_last_target));
+                            .push((current_node_name.to_string(), steps_since_last_target));
                         break;
                     }
-                    visited_targets.insert(current_node.to_string());
+                    visited_targets.insert(current_node_name.to_string());
                     distances.entry(node.name().to_string())
                         .or_insert_with(Vec::new)
-                        .push((current_node.to_string(), steps_since_last_target));
+                        .push((current_node_name.to_string(), steps_since_last_target));
                     steps_since_last_target = 0;
                 }
             }

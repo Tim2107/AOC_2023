@@ -1,6 +1,7 @@
 mod node;
 mod graph;
 mod parser;
+mod errors;
 
 use crate::utils::input_output::read_file;
 use graph::Graph;

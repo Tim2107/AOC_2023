@@ -42,7 +42,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_waypoin_instructions() {
+    fn test_parse_waypoint_instructions() {
         let content = read_file("resources/input_day_8_test_a.txt").unwrap();
         assert_eq!(parse_waypoint_instructions(&content).unwrap(), "RL");
     }
