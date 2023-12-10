@@ -30,7 +30,7 @@ impl Graph {
         })
     }
 
-    pub fn traverse(&self, start: &str, target: &str, max_cycles: usize) -> Option<(String, usize)> {
+    pub fn traverse(&self, start: &str, target: &str, max_cycles: usize) -> Result<(String, usize), String> {
         let mut current_node = start;
         let mut current_cycle = 0;
         let mut steps = 0;
@@ -38,25 +38,18 @@ impl Graph {
 
         while current_cycle < max_cycles {
             for i in 0..instruction_len {
-                if let Some(node) = self.nodes.get(current_node) {
-                    if current_node == target {
-                        return Some((target.to_string(), steps));
-                    }
+                let next_node = self.get_next_node(current_node, self.waypoint_instructions.chars().nth(i).unwrap())?;
+                current_node = next_node.name();
 
-                    let next_instruction = self.waypoint_instructions.chars().nth(i).unwrap();
-                    current_node = match next_instruction {
-                        'R' => node.right_neighbour(),
-                        'L' => node.left_neighbour(),
-                        _ => return None,
-                    };
-                    steps += 1;
-                } else {
-                    return None;
+                if current_node == target {
+                    return Ok((target.to_string(), steps));
                 }
+                steps += 1;
             }
             current_cycle += 1;
         }
-        None
+
+        Err("Target not reached within maximum cycles".to_string())
     }
 
     pub fn find_overall_step(&self) -> usize {
@@ -119,7 +112,22 @@ impl Graph {
 
         distances
     }
+
+    fn get_next_node(&self, current_node: &str, instruction: char) -> Result<&Node, String> {
+        let node = self.nodes.get(current_node)
+            .ok_or_else(|| "Current node not found in the graph".to_string())?;
+
+        match instruction {
+            'R' => self.nodes.get(node.right_neighbour())
+                .ok_or_else(|| "Right neighbor not found".to_string()),
+            'L' => self.nodes.get(node.left_neighbour())
+                .ok_or_else(|| "Left neighbor not found".to_string()),
+            _ => Err("Cannot get next node -> waypoint instruction is invalid.".to_string()),
+        }
+    }
 }
+
+
 
 
 #[cfg(test)]
