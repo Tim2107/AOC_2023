@@ -2,8 +2,11 @@ mod utils;
 mod day_8;
 mod day_9;
 mod day_1;
+mod day_10;
 
 fn main() {
+
+    std::env::set_var("RUST_LOG", "info");
 
     match day_1::solve_day_1() {
         Ok(part_1_sum) => {

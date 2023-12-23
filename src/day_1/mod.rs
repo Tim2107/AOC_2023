@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufRead};
 
-pub fn solve_day_1() -> io::Result<(i32)> {
+pub fn solve_day_1() -> io::Result<i32> {
     let path = "resources/input_day_1.txt";
     let file = File::open(path)?;
     let reader = io::BufReader::new(file);
