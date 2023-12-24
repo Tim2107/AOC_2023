@@ -18,13 +18,12 @@ impl Parser {
             })
         })
     }
-
-
 }
 
 
 #[cfg(test)]
 mod tests {
+    use rstest::rstest;
     use super::*;
     use crate::utils::input_output::read_file;
 
@@ -34,27 +33,13 @@ mod tests {
         assert!(!content.is_empty());
     }
 
-    #[test]
-    fn test_find_starting_position_a() {
-        test_find_starting_position_helper("resources/input_day_10_test_a.txt",(1,1));
-    }
+    #[rstest]
+    #[case("resources/input_day_10_test_a.txt",(1,1))]
+    #[case("resources/input_day_10_test_b.txt",(1,1))]
+    #[case("resources/input_day_10_test_c.txt",(0,2))]
+    #[case("resources/input_day_10_test_d.txt",(0,2))]
 
-    #[test]
-    fn test_find_starting_position_b() {
-        test_find_starting_position_helper("resources/input_day_10_test_b.txt",(1,1));
-    }
-
-    #[test]
-    fn test_find_starting_position_c() {
-        test_find_starting_position_helper("resources/input_day_10_test_c.txt",(0,2));
-    }
-
-    #[test]
-    fn test_find_starting_position_d() {
-        test_find_starting_position_helper("resources/input_day_10_test_d.txt",(0,2));
-    }
-
-    fn test_find_starting_position_helper(input_file: &str, expected_position: (usize,usize)) {
+    fn test_find_starting_position(#[case] input_file: &str, #[case]expected_position: (usize,usize)) {
         let content = read_file(input_file).unwrap();
         let parser = Parser::new(&content);
         assert_eq!(parser.find_starting_position().unwrap(), expected_position);

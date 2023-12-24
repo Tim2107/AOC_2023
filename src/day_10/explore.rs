@@ -136,12 +136,6 @@ mod tests {
     use crate::utils::input_output::read_file;
 
     #[test]
-    fn test_read_file() {
-        let content = read_file("resources/input_day_10_test_a.txt").unwrap();
-        assert!(!content.is_empty());
-    }
-
-    #[test]
     fn test_is_on_map() {
         let content = read_file("resources/input_day_10_test_a.txt").unwrap();
         let explorer = Explorer::new(&content);
