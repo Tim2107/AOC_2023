@@ -18,7 +18,6 @@ fn main() {
 
     println!();
 
-
     match day_8::solve_day_8() {
         Ok((part_1_steps, part_2_steps)) => {
             println!("Day 8, Part 1: {} steps", part_1_steps);
@@ -35,5 +34,14 @@ fn main() {
             println!("Day 9, Part 2: The sum of the extrapolated preceding numbers is {}", part_2_sum);
         },
         Err(err) => { eprintln!("Error solving Day 9: {}", err); }
+    }
+
+    println!();
+
+    match day_10::solve_day_10() {
+        Ok(furthest_distance) => {
+            println!("Day 10, Part 1: The furthest distance from the starting position is {} steps", furthest_distance);
+        },
+        Err(err) => { eprintln!("Error solving Day 10: {}", err); }
     }
 }
