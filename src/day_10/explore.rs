@@ -23,21 +23,42 @@ impl Explorer {
 
         for (y, row) in self.map.iter().enumerate() {
             for (x, &ch) in row.iter().enumerate() {
-                let connections = match ch {
-                    '|' => vec![(x, y - 1), (x, y + 1)],
-                    '-' => vec![(x - 1, y), (x + 1, y)],
-                    'L' => vec![(x, y - 1), (x + 1, y)],
-                    'J' => vec![(x, y - 1), (x - 1, y)],
-                    '7' => vec![(x, y + 1), (x - 1, y)],
-                    'F' => vec![(x, y + 1), (x + 1, y)],
-                    'S' => vec![],
-                    '.' => vec![],
-                    _ => vec![],
-                };
+                let mut connections = Vec::new();
+                match ch {
+                    '|' => {
+                        if self.is_on_map(y as isize - 1) { connections.push((x, y - 1)); }
+                        if self.is_on_map(x as isize + 1) { connections.push((x, y + 1)); }
+                    },
+                    '-' => {
+                        if self.is_on_map(x as isize - 1) { connections.push((x - 1, y)); }
+                        if self.is_on_map(x as isize + 1) { connections.push((x + 1, y)); }
+                    },
+                    'L' => {
+                        if self.is_on_map(y as isize - 1) { connections.push((x, y - 1)); }
+                        if self.is_on_map(x as isize + 1) { connections.push((x + 1, y)); }
+                    },
+                    'J' => {
+                        if self.is_on_map(y as isize - 1) { connections.push((x, y - 1)); }
+                        if self.is_on_map(x as isize - 1) { connections.push((x - 1, y)); }
+                    },
+                    '7' => {
+                        if self.is_on_map(y as isize + 1) { connections.push((x, y + 1)); }
+                        if self.is_on_map(x as isize - 1) { connections.push((x - 1, y)); }
+                    },
+                    'F' => {
+                        if self.is_on_map(y as isize + 1) { connections.push((x, y + 1)); }
+                        if self.is_on_map(x as isize + 1) { connections.push((x + 1, y)); }
+                    },
+                    _ => {},
+                }
                 map_tiles.insert((x, y), Tile::new((x, y), connections));
             }
         }
         map_tiles
+    }
+
+    fn is_on_map(&self, to_test: isize) -> bool {
+        !(to_test < 0 || (self.map.len() as isize) < to_test)
     }
 
     pub fn remove_tiles_without_receptacle(&self, map_tile_data: HashMap<(usize, usize), Tile>) -> HashMap<(usize, usize), Tile> {
@@ -73,7 +94,6 @@ impl Explorer {
     }
 
     pub fn find_connected_tiles(&self, mut map_tile_data: &mut HashMap<(usize, usize), Tile>) -> HashMap<(usize, usize), Tile> {
-        env_logger::init();
 
         let mut connected_tiles = HashMap::new();
         let mut newly_added = vec![self.start_position];
@@ -111,6 +131,7 @@ impl Explorer {
 
 #[cfg(test)]
 mod tests {
+    use rstest::rstest;
     use super::*;
     use crate::utils::input_output::read_file;
 
@@ -121,17 +142,30 @@ mod tests {
     }
 
     #[test]
-    fn test_get_map_tile_data() {
+    fn test_is_on_map() {
         let content = read_file("resources/input_day_10_test_a.txt").unwrap();
         let explorer = Explorer::new(&content);
-        let map =explorer.get_map_tile_data();
-        let possible_connections = explorer.remove_tiles_without_receptacle(map);
+        assert!(explorer.is_on_map(4))
+    }
 
-        assert_eq!(possible_connections.len(),7)
+    #[rstest]
+    #[case("resources/input_day_10_test_a.txt",7)]
+    #[case("resources/input_day_10_test_b.txt",24)]
+    #[case("resources/input_day_10_test_c.txt",15)]
+    #[case("resources/input_day_10_test_d.txt",22)]
+
+    pub fn test_get_map_tile_data(#[case] input_file: &str, #[case] expected: usize) {
+
+        let content = read_file(input_file).unwrap();
+        let explorer = Explorer::new(&content);
+        let map =explorer.get_map_tile_data();
+        let tiles_with_receptacle = explorer.remove_tiles_without_receptacle(map);
+
+        assert_eq!(tiles_with_receptacle.len(), expected)
     }
 
     #[test]
-    fn test_build_loop() {
+    fn test_print_loop() {
         let content = read_file("resources/input_day_10_test_a.txt").unwrap();
         let explorer = Explorer::new(&content);
         let map =explorer.get_map_tile_data();
@@ -145,14 +179,20 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_find_furthest_distance() {
-        let content = read_file("resources/input_day_10_test_a.txt").unwrap();
+   #[rstest]
+   #[case("resources/input_day_10_test_a.txt",4)]
+   #[case("resources/input_day_10_test_b.txt",4)]
+   #[case("resources/input_day_10_test_c.txt",8)]
+   #[case("resources/input_day_10_test_d.txt",8)]
+
+    fn test_find_furthest_distance(#[case] input_file:&str, #[case] furthest_distance:usize) {
+        let content = read_file(input_file).unwrap();
         let explorer = Explorer::new(&content);
         let map =explorer.get_map_tile_data();
         let mut possible_connections = explorer.remove_tiles_without_receptacle(map);
         let pipe_loop = explorer.find_connected_tiles(&mut possible_connections);
         let furthest_position = explorer.find_furthest_distance(&pipe_loop);
-        assert_eq!(furthest_position,4);
+
+        assert_eq!(furthest_position,furthest_distance);
     }
 }
