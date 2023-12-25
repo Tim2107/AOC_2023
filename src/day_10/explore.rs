@@ -72,34 +72,6 @@ impl Explorer {
             .collect()
     }
 
-    pub fn get_loop(&self, mut map_tile_data: &mut HashMap<(usize, usize), Tile>) -> HashMap<(usize, usize), Tile> {
-
-        let mut connected_tiles = HashMap::new();
-        let mut newly_added = vec![self.start_position];
-
-        let start_tile_connections = self.get_start_tile_connections(map_tile_data);
-        map_tile_data.insert(self.start_position, Tile::new(self.start_position, start_tile_connections));
-
-        while !newly_added.is_empty() {
-            let mut next_newly_added = Vec::new();
-
-            for &position in &newly_added {
-                if let Some(tile) = map_tile_data.get(&position) {
-                    for &connection_data in tile.connections() {
-                        if !connected_tiles.contains_key(&connection_data) && !newly_added.contains(&connection_data) {
-                            connected_tiles.insert(connection_data, map_tile_data[&connection_data].clone());
-                            next_newly_added.push(connection_data);
-                        }
-                    }
-                }
-            }
-
-            newly_added = next_newly_added;
-        }
-
-        connected_tiles
-    }
-
     pub fn get_start_tile_connections(&self, map_tile_data: &HashMap<(usize, usize), Tile>) -> Vec<(usize, usize)> {
         map_tile_data.iter()
             .filter(|&(_, tile)| tile.connections().contains(&self.start_position))
@@ -137,21 +109,6 @@ mod tests {
         assert_eq!(tiles_with_receptacle.len(), expected)
     }
 
-    #[test]
-    fn test_print_loop() {
-        let content = read_file("resources/input_day_10_test_a.txt").unwrap();
-        let explorer = Explorer::new(&content);
-        let map =explorer.get_map_tile_data();
-        let mut possible_connections = explorer.remove_tiles_without_receptacle(map);
-        let pipe_loop = explorer.get_loop(&mut possible_connections);
-        for ((x, y), tile) in pipe_loop.iter() {
-            println!("Tile at ({}, {}):", x, y);
-            for connection in tile.connections() {
-                println!("  Connected to: {:?}", connection);
-            }
-        }
-    }
-
    #[rstest]
    #[case("resources/input_day_10_test_a.txt",4)]
    #[case("resources/input_day_10_test_b.txt",4)]
@@ -161,9 +118,6 @@ mod tests {
     fn test_find_furthest_distance(#[case] input_file:&str, #[case] furthest_distance:usize) {
         let content = read_file(input_file).unwrap();
         let explorer = Explorer::new(&content);
-        let map =explorer.get_map_tile_data();
-        let mut possible_connections = explorer.remove_tiles_without_receptacle(map);
-        let pipe_loop = explorer.get_loop(&mut possible_connections);
         let furthest_position = explorer.find_furthest_distance();
 
         assert_eq!(furthest_position,furthest_distance);
