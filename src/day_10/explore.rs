@@ -40,6 +40,12 @@ impl Explorer {
         tile_data_map
     }
 
+    fn iterate_map_tiles<'a>(&'a self) -> impl Iterator<Item = (usize, usize, char)> + 'a {
+        self.map.iter().enumerate().flat_map(move |(y, row)| {
+            row.iter().enumerate().map(move |(x, &tile_char)| (x, y, tile_char))
+        })
+    }
+
     pub fn process_tile_data(&self, x: usize, y: usize, tile_char: char) -> Tile {
         let receptors = Tile::get_receptors(tile_char);
 
@@ -58,18 +64,6 @@ impl Explorer {
 
     fn is_on_map(&self, x: isize, y: isize) -> bool {
         x >= 0 && (x as usize) < self.map[0].len() && y >= 0 && (y as usize) < self.map.len()
-    }
-
-    fn iterate_map_tiles<'a>(&'a self) -> impl Iterator<Item = (usize, usize, char)> + 'a {
-        self.map.iter().enumerate().flat_map(move |(y, row)| {
-            row.iter().enumerate().map(move |(x, &tile_char)| (x, y, tile_char))
-        })
-    }
-
-    pub fn remove_tiles_without_receptacle(&self, map_tile_data: HashMap<(usize, usize), Tile>) -> HashMap<(usize, usize), Tile> {
-        map_tile_data.into_iter()
-            .filter(|&(_, ref tile)| !tile.connections().is_empty())
-            .collect()
     }
 
     pub fn get_start_tile_connections(&self, map_tile_data: &HashMap<(usize, usize), Tile>) -> Vec<(usize, usize)> {
@@ -104,9 +98,15 @@ mod tests {
         let content = read_file(input_file).unwrap();
         let explorer = Explorer::new(&content);
         let map =explorer.get_map_tile_data();
-        let tiles_with_receptacle = explorer.remove_tiles_without_receptacle(map);
+        let tiles_with_receptacle = remove_tiles_without_receptacle(map);
 
         assert_eq!(tiles_with_receptacle.len(), expected)
+    }
+
+    pub fn remove_tiles_without_receptacle(map_tile_data: HashMap<(usize, usize), Tile>) -> HashMap<(usize, usize), Tile> {
+        map_tile_data.into_iter()
+            .filter(|&(_, ref tile)| !tile.connections().is_empty())
+            .collect()
     }
 
    #[rstest]
