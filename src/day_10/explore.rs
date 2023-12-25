@@ -87,7 +87,7 @@ impl Explorer {
         total_jumps / 2
     }
 
-    pub fn find_connected_tiles(&self, mut map_tile_data: &mut HashMap<(usize, usize), Tile>) -> HashMap<(usize, usize), Tile> {
+    pub fn get_loop(&self, mut map_tile_data: &mut HashMap<(usize, usize), Tile>) -> HashMap<(usize, usize), Tile> {
 
         let mut connected_tiles = HashMap::new();
         let mut newly_added = vec![self.start_position];
@@ -158,7 +158,7 @@ mod tests {
         let explorer = Explorer::new(&content);
         let map =explorer.get_map_tile_data();
         let mut possible_connections = explorer.remove_tiles_without_receptacle(map);
-        let pipe_loop = explorer.find_connected_tiles(&mut possible_connections);
+        let pipe_loop = explorer.get_loop(&mut possible_connections);
         for ((x, y), tile) in pipe_loop.iter() {
             println!("Tile at ({}, {}):", x, y);
             for connection in tile.connections() {
@@ -178,7 +178,7 @@ mod tests {
         let explorer = Explorer::new(&content);
         let map =explorer.get_map_tile_data();
         let mut possible_connections = explorer.remove_tiles_without_receptacle(map);
-        let pipe_loop = explorer.find_connected_tiles(&mut possible_connections);
+        let pipe_loop = explorer.get_loop(&mut possible_connections);
         let furthest_position = explorer.find_furthest_distance(&pipe_loop);
 
         assert_eq!(furthest_position,furthest_distance);
