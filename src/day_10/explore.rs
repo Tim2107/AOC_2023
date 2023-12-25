@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use crate::day_10::parser::Parser;
 use crate::day_10::tile::Tile;
+use crate::day_10::loop_iterator::LoopIterator;
 
 pub struct Explorer {
     map: Vec<Vec<char>>,
@@ -16,6 +17,12 @@ impl Explorer {
             map: parsed_map.map,
             start_position,
         }
+    }
+
+    pub fn find_furthest_distance(&self, connected_tiles: &HashMap<(usize, usize), Tile>) -> usize {
+        let tile_loop_iterator = LoopIterator::new(connected_tiles, self.start_position);
+        let total_jumps = tile_loop_iterator.sum::<usize>();
+        total_jumps / 2
     }
 
     pub fn get_map_tile_data(&self) -> HashMap<(usize, usize), Tile> {
@@ -59,32 +66,6 @@ impl Explorer {
         map_tile_data.into_iter()
             .filter(|&(_, ref tile)| !tile.connections().is_empty())
             .collect()
-    }
-
-    pub fn find_furthest_distance(&self, connected_tiles: &HashMap<(usize, usize), Tile>) -> usize {
-        let mut current_position = self.start_position;
-        let mut previous_position = self.start_position;
-        let mut total_jumps = 0;
-
-        loop {
-            if let Some(tile) = connected_tiles.get(&current_position) {
-                if let Some(&next_position) = tile.connections().iter().find(|&&position| position != previous_position) {
-                    total_jumps += 1;
-                    previous_position = current_position;
-                    current_position = next_position;
-                } else {
-                    break;
-                }
-            } else {
-                break;
-            }
-
-            if current_position == self.start_position {
-                break;
-            }
-        }
-
-        total_jumps / 2
     }
 
     pub fn get_loop(&self, mut map_tile_data: &mut HashMap<(usize, usize), Tile>) -> HashMap<(usize, usize), Tile> {
