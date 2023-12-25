@@ -19,46 +19,40 @@ impl Explorer {
     }
 
     pub fn get_map_tile_data(&self) -> HashMap<(usize, usize), Tile> {
-        let mut map_tiles = HashMap::new();
+        let mut tile_data_map = HashMap::new();
 
-        for (y, row) in self.map.iter().enumerate() {
-            for (x, &ch) in row.iter().enumerate() {
-                let mut connections = Vec::new();
-                match ch {
-                    '|' => {
-                        if self.is_on_map(y as isize - 1) { connections.push((x, y - 1)); }
-                        if self.is_on_map(x as isize + 1) { connections.push((x, y + 1)); }
-                    },
-                    '-' => {
-                        if self.is_on_map(x as isize - 1) { connections.push((x - 1, y)); }
-                        if self.is_on_map(x as isize + 1) { connections.push((x + 1, y)); }
-                    },
-                    'L' => {
-                        if self.is_on_map(y as isize - 1) { connections.push((x, y - 1)); }
-                        if self.is_on_map(x as isize + 1) { connections.push((x + 1, y)); }
-                    },
-                    'J' => {
-                        if self.is_on_map(y as isize - 1) { connections.push((x, y - 1)); }
-                        if self.is_on_map(x as isize - 1) { connections.push((x - 1, y)); }
-                    },
-                    '7' => {
-                        if self.is_on_map(y as isize + 1) { connections.push((x, y + 1)); }
-                        if self.is_on_map(x as isize - 1) { connections.push((x - 1, y)); }
-                    },
-                    'F' => {
-                        if self.is_on_map(y as isize + 1) { connections.push((x, y + 1)); }
-                        if self.is_on_map(x as isize + 1) { connections.push((x + 1, y)); }
-                    },
-                    _ => {},
-                }
-                map_tiles.insert((x, y), Tile::new((x, y), connections));
-            }
+        for (x, y, tile_char) in self.iterate_map_tiles() {
+            let tile = self.process_tile_data(x, y, tile_char);
+            tile_data_map.insert((x, y), tile);
         }
-        map_tiles
+
+        tile_data_map
     }
 
-    fn is_on_map(&self, to_test: isize) -> bool {
-        !(to_test < 0 || (self.map.len() as isize) < to_test)
+    pub fn process_tile_data(&self, x: usize, y: usize, tile_char: char) -> Tile {
+        let receptors = Tile::get_receptors(tile_char);
+
+        let mut connections = Vec::new();
+        for (dx, dy) in receptors {
+            let new_x = x as isize + dx;
+            let new_y = y as isize + dy;
+
+            if self.is_on_map(new_x, new_y) {
+                connections.push((new_x as usize, new_y as usize));
+            }
+        }
+
+        Tile::new((x, y), connections)
+    }
+
+    fn is_on_map(&self, x: isize, y: isize) -> bool {
+        x >= 0 && (x as usize) < self.map[0].len() && y >= 0 && (y as usize) < self.map.len()
+    }
+
+    fn iterate_map_tiles<'a>(&'a self) -> impl Iterator<Item = (usize, usize, char)> + 'a {
+        self.map.iter().enumerate().flat_map(move |(y, row)| {
+            row.iter().enumerate().map(move |(x, &tile_char)| (x, y, tile_char))
+        })
     }
 
     pub fn remove_tiles_without_receptacle(&self, map_tile_data: HashMap<(usize, usize), Tile>) -> HashMap<(usize, usize), Tile> {
@@ -139,7 +133,7 @@ mod tests {
     fn test_is_on_map() {
         let content = read_file("resources/input_day_10_test_a.txt").unwrap();
         let explorer = Explorer::new(&content);
-        assert!(explorer.is_on_map(4))
+        assert!(explorer.is_on_map(3,2))
     }
 
     #[rstest]
