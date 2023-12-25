@@ -19,8 +19,9 @@ impl Explorer {
         }
     }
 
-    pub fn find_furthest_distance(&self, connected_tiles: &HashMap<(usize, usize), Tile>) -> usize {
-        let tile_loop_iterator = LoopIterator::new(connected_tiles, self.start_position);
+    pub fn find_furthest_distance(&self) -> usize {
+        let map_data = self.get_map_tile_data();
+        let tile_loop_iterator = LoopIterator::new(&map_data, self.start_position);
         let total_jumps = tile_loop_iterator.sum::<usize>();
         total_jumps / 2
     }
@@ -32,6 +33,9 @@ impl Explorer {
             let tile = self.process_tile_data(x, y, tile_char);
             tile_data_map.insert((x, y), tile);
         }
+
+        let start_tile_connections = self.get_start_tile_connections(&tile_data_map);
+        tile_data_map.insert(self.start_position, Tile::new(self.start_position,start_tile_connections));
 
         tile_data_map
     }
@@ -118,10 +122,10 @@ mod tests {
     }
 
     #[rstest]
-    #[case("resources/input_day_10_test_a.txt",7)]
+    #[case("resources/input_day_10_test_a.txt",8)]
     #[case("resources/input_day_10_test_b.txt",24)]
-    #[case("resources/input_day_10_test_c.txt",15)]
-    #[case("resources/input_day_10_test_d.txt",22)]
+    #[case("resources/input_day_10_test_c.txt",16)]
+    #[case("resources/input_day_10_test_d.txt",23)]
 
     pub fn test_get_map_tile_data(#[case] input_file: &str, #[case] expected: usize) {
 
@@ -160,7 +164,7 @@ mod tests {
         let map =explorer.get_map_tile_data();
         let mut possible_connections = explorer.remove_tiles_without_receptacle(map);
         let pipe_loop = explorer.get_loop(&mut possible_connections);
-        let furthest_position = explorer.find_furthest_distance(&pipe_loop);
+        let furthest_position = explorer.find_furthest_distance();
 
         assert_eq!(furthest_position,furthest_distance);
     }
