@@ -1,5 +1,3 @@
-use crate::day_9::parser::{parse_sequences_from_file};
-
 pub fn sum_of_predictions(predictions: &[i32]) -> i32 {
     predictions.iter().sum()
 }
@@ -8,7 +6,7 @@ pub fn analyze_and_predict_next_numbers(sequences: &[Vec<i32>]) -> Vec<i32> {
     analyze_and_predict_numbers(sequences, extrapolate_next_number)
 }
 
-pub fn analyze_and_predict_preceeding_numbers(sequences: &[Vec<i32>]) -> Vec<i32> {
+pub fn analyze_and_predict_preceding_numbers(sequences: &[Vec<i32>]) -> Vec<i32> {
     analyze_and_predict_numbers(sequences, extrapolate_preceeding_number)
 }
 
@@ -64,6 +62,7 @@ pub fn calculate_differences(sequence: &[i32]) -> Vec<i32> {
 
 #[cfg(test)]
 mod tests{
+    use crate::day_9::parser::parse_sequences_from_file;
     use super::*;
 
     #[test]
@@ -144,7 +143,7 @@ mod tests{
     fn test_analyze_and_predict_preceeding_numbers(){
         let expected_numbers = vec![-3,0,5];
         let sequences_to_analyze = parse_sequences_from_file("resources/input_day_9_test.txt").unwrap();
-        let preceeding_numbers = analyze_and_predict_preceeding_numbers(&sequences_to_analyze);
+        let preceeding_numbers = analyze_and_predict_preceding_numbers(&sequences_to_analyze);
         assert_eq!(preceeding_numbers, expected_numbers);
     }
 

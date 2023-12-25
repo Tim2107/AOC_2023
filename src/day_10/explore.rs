@@ -35,7 +35,7 @@ impl Explorer {
         }
 
         let start_tile_connections = self.get_start_tile_connections(&tile_data_map);
-        tile_data_map.insert(self.start_position, Tile::new(self.start_position,start_tile_connections));
+        tile_data_map.insert(self.start_position, Tile::new(start_tile_connections));
 
         tile_data_map
     }
@@ -59,7 +59,7 @@ impl Explorer {
             }
         }
 
-        Tile::new((x, y), connections)
+        Tile::new(connections)
     }
 
     fn is_on_map(&self, x: isize, y: isize) -> bool {

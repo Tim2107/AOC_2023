@@ -6,8 +6,6 @@ mod day_10;
 
 fn main() {
 
-    std::env::set_var("RUST_LOG", "info");
-
     match day_1::solve_day_1() {
         Ok(part_1_sum) => {
             println!("Day 1, Part 1: The sum is {}", part_1_sum);
