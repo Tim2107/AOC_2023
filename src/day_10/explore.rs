@@ -22,8 +22,18 @@ impl Explorer {
     pub fn find_furthest_distance(&self) -> usize {
         let map_data = self.get_map_tile_data();
         let tile_loop_iterator = LoopIterator::new(&map_data, self.start_position);
-        let total_jumps = tile_loop_iterator.sum::<usize>();
+        let total_jumps = tile_loop_iterator.map(|(count, _, _)| count).sum::<usize>();
         total_jumps / 2
+    }
+
+    pub fn count_enclosed_tiles(&self) {
+        let map_data = self.get_map_tile_data();
+        let tile_loop_iterator = LoopIterator::new(&map_data, self.start_position);
+
+        for (_, position,is_forward) in tile_loop_iterator {
+            let tile_char = self.map[position.0][position.1];
+            println!("Tile: {}, is_forward: {}", tile_char, is_forward);
+        }
     }
 
     pub fn get_map_tile_data(&self) -> HashMap<(usize, usize), Tile> {
@@ -35,7 +45,7 @@ impl Explorer {
         }
 
         let start_tile_connections = self.get_start_tile_connections(&tile_data_map);
-        tile_data_map.insert(self.start_position, Tile::new(start_tile_connections));
+        tile_data_map.insert(self.start_position, Tile::new('S',start_tile_connections));
 
         tile_data_map
     }
@@ -47,19 +57,21 @@ impl Explorer {
     }
 
     pub fn process_tile_data(&self, x: usize, y: usize, tile_char: char) -> Tile {
-        let receptors = Tile::get_receptors(tile_char);
+        let mut tile = Tile::new(tile_char, vec![],);
+        let receptors = tile.receptors();
 
-        let mut connections = Vec::new();
+        let mut updated_connections = Vec::new();
         for (dx, dy) in receptors {
             let new_x = x as isize + dx;
             let new_y = y as isize + dy;
 
             if self.is_on_map(new_x, new_y) {
-                connections.push((new_x as usize, new_y as usize));
+                updated_connections.push((new_x as usize, new_y as usize));
             }
         }
 
-        Tile::new(connections)
+        tile.set_connections(updated_connections);
+        tile
     }
 
     fn is_on_map(&self, x: isize, y: isize) -> bool {
@@ -121,5 +133,13 @@ mod tests {
         let furthest_position = explorer.find_furthest_distance();
 
         assert_eq!(furthest_position,furthest_distance);
+    }
+
+    #[rstest]
+    #[case("resources/input_day_10_test_a.txt")]
+    fn test_visualize_lateral_data(#[case] input_file:&str){
+        let content = read_file(input_file).unwrap();
+        let explorer = Explorer::new(&content);
+        let furthest_position = explorer.count_enclosed_tiles();
     }
 }
