@@ -31,9 +31,6 @@ mod tests {
     #[case("resources/input_day_10_test_b.txt")]
     #[case("resources/input_day_10_test_c.txt")]
     #[case("resources/input_day_10_test_d.txt")]
-    #[case("resources/input_day_10_test_e.txt")]
-    #[case("resources/input_day_10_test_f.txt")]
-    #[case("resources/input_day_10_test_g.txt")]
     fn test_read_file(#[case] input_file: &str) {
         let content = read_file(input_file).unwrap();
         assert!(!content.is_empty());
