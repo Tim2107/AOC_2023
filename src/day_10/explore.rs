@@ -3,6 +3,7 @@ use colored::*;
 use crate::day_10::parser::Parser;
 use crate::day_10::tile::Tile;
 use crate::day_10::loop_iterator::LoopIterator;
+use crate::utils::collection_operations::{choose_tuple};
 
 pub struct Explorer {
     map: Vec<Vec<char>>,
@@ -22,14 +23,20 @@ impl Explorer {
 
     pub fn find_furthest_distance(&self) -> usize {
         let map_data = self.get_map_tile_data();
-        let tile_loop_iterator = LoopIterator::new(&map_data, self.start_position);
+        let start_tile = map_data.get(&self.start_position);
+        let start_tile_connections = start_tile.unwrap().connections();
+        let start_direction_exclusion = choose_tuple(start_tile_connections);
+        let tile_loop_iterator = LoopIterator::new(&map_data, self.start_position, start_direction_exclusion);
         let total_jumps = tile_loop_iterator.map(|(count, _, _, _)| count).sum::<usize>();
         total_jumps / 2
     }
 
     pub fn count_enclosed_tiles(&self) {
         let map_data = self.get_map_tile_data();
-        let tile_loop_iterator = LoopIterator::new(&map_data, self.start_position);
+        let start_tile = map_data.get(&self.start_position);
+        let start_tile_connections = start_tile.unwrap().connections();
+        let start_direction_exclusion = choose_tuple(start_tile_connections);
+        let tile_loop_iterator = LoopIterator::new(&map_data, self.start_position,start_direction_exclusion);
 
         for (_, position,tile,is_forward) in tile_loop_iterator {
             println!("Tile: {} at position {} {} is_forward: {}", tile.tile_type(), position.0, position.1, format!("{:?}", is_forward).green());

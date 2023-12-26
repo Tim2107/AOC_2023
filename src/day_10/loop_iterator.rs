@@ -11,12 +11,12 @@ pub struct LoopIterator<'a> {
 }
 
 impl<'a> LoopIterator<'a> {
-    pub fn new(connected_tiles: &'a HashMap<(usize, usize), Tile>, start_position: (usize, usize)) -> Self {
+    pub fn new(connected_tiles: &'a HashMap<(usize, usize), Tile>, start_position: (usize, usize), start_direction_exclusion: (usize, usize)) -> Self {
         Self {
             tile_map: connected_tiles,
             start_position,
             current_position: start_position,
-            previous_position: start_position,
+            previous_position: start_direction_exclusion,
             has_started: false,
         }
     }

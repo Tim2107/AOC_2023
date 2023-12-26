@@ -45,3 +45,14 @@ pub fn add_tuples<T: IntoIsizeTuple, U: IntoIsizeTuple>(a: T, b: U) -> (isize, i
     (dx, dy)
 }
 
+pub fn choose_tuple(v: &[(usize, usize)]) -> (usize, usize) {
+    if v.len() != 2 {
+        panic!("Expected a vector with exactly two elements");
+    }
+
+    if v[0] < v[1] {
+        v[0]
+    } else {
+        v[1]
+    }
+}
