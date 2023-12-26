@@ -50,8 +50,8 @@ pub fn choose_tuple(v: &[(usize, usize)]) -> (usize, usize) {
     }
 
     if v[0] < v[1] {
-        v[0]
-    } else {
         v[1]
+    } else {
+        v[0]
     }
 }

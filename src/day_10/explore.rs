@@ -49,6 +49,16 @@ impl Explorer {
         }
 
         let flood_seeds: HashSet<(usize, usize)> = flood_seed_candidates.difference(&tile_loop).cloned().collect();
+        for tile in &tile_loop {
+            println!("{:?}",tile);
+        }
+
+        println!("Seeds:");
+
+        for seed in &flood_seeds {
+            println!("{:?}",seed);
+        }
+
         let contained_tiles = self.flood_fill(&tile_loop, &flood_seeds).len();
         contained_tiles
     }
@@ -210,6 +220,15 @@ mod tests {
         let enclosed_tile_count = explorer.count_enclosed_tiles();
 
         assert_eq!(enclosed_tile_count, expected_count);
+    }
+
+    #[test]
+    fn test_count_enclosed_tiles1(){
+        let content = read_file("resources/input_day_10.txt").unwrap();
+        let explorer = Explorer::new(&content);
+        let enclosed_tile_count = explorer.count_enclosed_tiles();
+
+        assert_eq!(enclosed_tile_count, 8);
     }
 }
 
