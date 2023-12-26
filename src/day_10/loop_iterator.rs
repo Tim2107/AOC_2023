@@ -25,10 +25,7 @@ impl<'a> LoopIterator<'a> {
 
         let entry_point = subtract_tuples (previous_position, current_position);
 
-        println!("entry_point: {:?}   current_position: {:?}  previous_position: {:?}", entry_point, current_position, previous_position);
-
         if tile_data.receptors().contains(&entry_point){
-            println!("tile_data:  {:?}",tile_data.receptors()[0]);
             if tile_data.receptors()[0] == entry_point {
                 return true;
             }
@@ -36,7 +33,7 @@ impl<'a> LoopIterator<'a> {
         false
     }
 
-    fn check_right(&self,current_position:(usize,usize), inspected_tile: &Tile, is_forward: bool){
+    fn positions_to_check_right(&self, current_position:(usize, usize), inspected_tile: &Tile, is_forward: bool) -> Vec<(usize, usize)> {
         let mut to_inspect = Vec::new();
 
         if !(&inspected_tile.lateral_data().is_empty()){
@@ -49,16 +46,18 @@ impl<'a> LoopIterator<'a> {
                     to_inspect.push(add_tuples(current_position, *positions_to_check))
                 }
             }
-
-            for item in to_inspect {
-                println!("positions_on_the_right: {:?}", item)
-            }
         }
+
+        let to_inspect: Vec<(usize, usize)> = to_inspect.iter()
+            .map(|&(x, y)| (x.max(0) as usize, y.max(0) as usize))
+            .collect();
+
+        to_inspect
     }
 }
 
 impl<'a> Iterator for LoopIterator<'a> {
-    type Item = (usize,(usize, usize),Tile,bool);
+    type Item = (usize,(usize, usize), Vec<(usize, usize)>);
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.has_started && self.current_position == self.start_position {
@@ -72,9 +71,9 @@ impl<'a> Iterator for LoopIterator<'a> {
 
                 self.previous_position = self.current_position;
                 self.current_position = next_position;
+                let positions_to_check =  self.positions_to_check_right(self.previous_position, &tile, is_forward);
 
-                self.check_right(self.previous_position,&tile,is_forward);
-                Some((1, self.previous_position , tile.clone() ,is_forward))
+                Some((1, self.previous_position , positions_to_check))
             } else {
                 None
             }

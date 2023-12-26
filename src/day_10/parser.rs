@@ -34,7 +34,6 @@ mod tests {
     #[case("resources/input_day_10_test_e.txt")]
     #[case("resources/input_day_10_test_f.txt")]
     #[case("resources/input_day_10_test_g.txt")]
-    #[case("resources/input_day_10_test_h.txt")]
     fn test_read_file(#[case] input_file: &str) {
         let content = read_file(input_file).unwrap();
         assert!(!content.is_empty());
@@ -48,7 +47,6 @@ mod tests {
     #[case("resources/input_day_10_test_e.txt",(1,1))]
     #[case("resources/input_day_10_test_f.txt",(12,4))]
     #[case("resources/input_day_10_test_g.txt",(4,0))]
-    #[case("resources/input_day_10_test_h.txt",(4,0))]
 
     fn test_find_starting_position(#[case] input_file: &str, #[case]expected_position: (usize,usize)) {
         let content = read_file(input_file).unwrap();

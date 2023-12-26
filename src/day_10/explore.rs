@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use colored::*;
+use std::collections::{HashSet, VecDeque};
 use crate::day_10::parser::Parser;
 use crate::day_10::tile::Tile;
 use crate::day_10::loop_iterator::LoopIterator;
@@ -27,21 +27,62 @@ impl Explorer {
         let start_tile_connections = start_tile.unwrap().connections();
         let start_direction_exclusion = choose_tuple(start_tile_connections);
         let tile_loop_iterator = LoopIterator::new(&map_data, self.start_position, start_direction_exclusion);
-        let total_jumps = tile_loop_iterator.map(|(count, _, _, _)| count).sum::<usize>();
+        let total_jumps = tile_loop_iterator.map(|(count, _, _)| count).sum::<usize>();
         total_jumps / 2
     }
 
-    pub fn count_enclosed_tiles(&self) {
+    pub fn count_enclosed_tiles(&self) -> usize {
         let map_data = self.get_map_tile_data();
         let start_tile = map_data.get(&self.start_position);
         let start_tile_connections = start_tile.unwrap().connections();
         let start_direction_exclusion = choose_tuple(start_tile_connections);
         let tile_loop_iterator = LoopIterator::new(&map_data, self.start_position,start_direction_exclusion);
 
-        for (_, position,tile,is_forward) in tile_loop_iterator {
-            println!("Tile: {} at position {} {} is_forward: {}", tile.tile_type(), position.0, position.1, format!("{:?}", is_forward).green());
-            println!("");
+        let mut tile_loop = HashSet::new();
+        let mut flood_seed_candidates = HashSet::new();
+
+        for (_, position, positions_to_check) in tile_loop_iterator {
+            tile_loop.insert(position);
+            for candidate in positions_to_check {
+                flood_seed_candidates.insert(candidate);
+            }
         }
+
+        let flood_seeds: HashSet<(usize, usize)> = flood_seed_candidates.difference(&tile_loop).cloned().collect();
+        let contained_tiles = self.flood_fill(&tile_loop, &flood_seeds).len();
+        contained_tiles
+    }
+
+    pub fn flood_fill(&self, tile_loop: &HashSet<(usize, usize)>, flood_seeds: &HashSet<(usize, usize)>) -> HashSet<(usize, usize)> {
+        let mut visited = HashSet::new();
+        let mut to_visit = VecDeque::new();
+
+        for &seed in flood_seeds {
+            if !tile_loop.contains(&seed) {
+                to_visit.push_back(seed);
+            }
+        }
+
+        let directions = [(0, 1), (0, -1), (1, 0), (-1, 0)];
+
+        while let Some((x, y)) = to_visit.pop_front() {
+            if visited.contains(&(x, y)) {
+                continue;
+            }
+
+            visited.insert((x, y));
+
+            for &(dx, dy) in &directions {
+                let nx = (x as isize + dx) as usize;
+                let ny = (y as isize + dy) as usize;
+
+                if !tile_loop.contains(&(nx, ny)) {
+                    to_visit.push_back((nx, ny));
+                }
+            }
+        }
+
+        visited
     }
 
     pub fn get_map_tile_data(&self) -> HashMap<(usize, usize), Tile> {
@@ -156,6 +197,19 @@ mod tests {
         let content = read_file("resources/input_day_10_test_c.txt").unwrap();
         let explorer = Explorer::new(&content);
         explorer.count_enclosed_tiles();
+    }
+
+    #[rstest]
+    #[case("resources/input_day_10_test_a.txt",1)]
+    //#[case("resources/input_day_10_test_e.txt",4)]
+    //#[case("resources/input_day_10_test_f.txt",8)]
+    //#[case("resources/input_day_10_test_g.txt",10)]
+    fn test_count_enclosed_tiles(#[case] input_file:&str, #[case] expected_count: usize){
+        let content = read_file(input_file).unwrap();
+        let explorer = Explorer::new(&content);
+        let enclosed_tile_count = explorer.count_enclosed_tiles();
+
+        assert_eq!(enclosed_tile_count, expected_count);
     }
 }
 
