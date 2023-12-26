@@ -10,18 +10,24 @@ impl Parser {
                                     .collect(),
         }
     }
+    pub fn adjust_for_cosmic_expansion(&mut self) -> &Vec<Vec<char>> {
+        self.double_rows_of_empty_space();
+        self.double_columns_of_empty_space();
+        &self.cosmos
+    }
 
-    pub fn adjust_for_cosmic_expansion(&mut self) -> &Vec<Vec<char>>{
-
+    fn double_rows_of_empty_space(&mut self) {
         let mut row = 0;
         while row < self.cosmos.len() {
-            if self.cosmos[row].iter().all(|&data_point| data_point == '.') {
+            if self.cosmos[row].iter().all(|&column| column == '.') {
                 self.cosmos.insert(row + 1, self.cosmos[row].clone());
                 row += 1;
             }
             row += 1;
         }
+    }
 
+    fn double_columns_of_empty_space(&mut self) {
         let mut column = 0;
         while column < self.cosmos[0].len() {
             if self.cosmos.iter().all(|row| row[column] == '.') {
@@ -32,8 +38,6 @@ impl Parser {
             }
             column += 1;
         }
-
-        &self.cosmos
     }
 }
 
