@@ -37,8 +37,9 @@ fn main() {
     println!();
 
     match day_10::solve_day_10() {
-        Ok(furthest_distance) => {
+        Ok((furthest_distance, enclosed_tile_count)) => {
             println!("Day 10, Part 1: The furthest distance from the starting position is {} steps", furthest_distance);
+            println!("Day 10, Part 1: There are {} enclosed tiles in the loop", enclosed_tile_count);
         },
         Err(err) => { eprintln!("Error solving Day 10: {}", err); }
     }

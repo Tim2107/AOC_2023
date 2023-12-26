@@ -7,9 +7,10 @@ mod explore;
 mod tile;
 mod loop_iterator;
 
-pub fn solve_day_10() -> Result<usize> {
+pub fn solve_day_10() -> Result<(usize,usize)> {
         let content = read_file("resources/input_day_10.txt")?;
         let explorer = Explorer::new(&content);
         let furthest_position = explorer.find_furthest_distance();
-        Ok(furthest_position)
+        let enclosed_tile_count = explorer.count_enclosed_tiles();
+        Ok((furthest_position, enclosed_tile_count))
 }

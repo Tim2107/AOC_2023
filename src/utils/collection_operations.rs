@@ -1,4 +1,4 @@
-trait IntoIsizeTuple {
+pub(crate) trait IntoIsizeTuple {
     fn into_isize_tuple(self) -> (isize, isize);
 }
 

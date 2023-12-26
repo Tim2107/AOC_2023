@@ -1,6 +1,5 @@
 #[derive(Clone)]
 pub struct Tile {
-    tile_type: char,
     connections: Vec<(usize, usize)>,
     receptors: Vec<(isize, isize)>,
     lateral_data: Vec<Vec<(isize, isize)>>
@@ -53,7 +52,6 @@ impl Tile {
         };
 
         Tile {
-            tile_type,
             connections,
             receptors,
             lateral_data,
@@ -65,7 +63,6 @@ impl Tile {
     pub fn connections(&self) -> &Vec<(usize, usize)> {
         &self.connections
     }
-    pub fn tile_type(&self) -> &char { &self.tile_type }
     pub fn receptors(&self) -> &Vec<(isize,isize)> { &self.receptors }
     pub fn lateral_data(&self) -> &Vec<Vec<(isize,isize)>> { &self.lateral_data }
 }
