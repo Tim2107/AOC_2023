@@ -1,5 +1,3 @@
-use crate::utils::input_output::print_grid;
-
 pub struct Parser{
     cosmos: Vec<Vec<char>>,
 }
@@ -18,7 +16,7 @@ impl Parser {
         let mut row = 0;
         while row < self.cosmos.len() {
             if self.cosmos[row].iter().all(|&data_point| data_point == '.') {
-                &self.cosmos.insert(row + 1, self.cosmos[row].clone());
+                self.cosmos.insert(row + 1, self.cosmos[row].clone());
                 row += 1;
             }
             row += 1;
@@ -43,7 +41,7 @@ impl Parser {
 mod tests{
     use rstest::rstest;
     use super::*;
-    use crate::utils::input_output::{read_file, print_grid};
+    use crate::utils::input_output::{read_file};
 
     #[rstest]
     #[case("resources/input_day_11_test_a.txt")]
@@ -56,10 +54,13 @@ mod tests{
     }
 
     #[test]
-    fn display_expanded_cosmos() {
+    fn test_adjust_for_cosmic_expansion() {
         let observatory_data = read_file("resources/input_day_11_test_a.txt").unwrap();
         let mut parser = Parser::new(&observatory_data);
         let expanded_cosmos = parser.adjust_for_cosmic_expansion();
-        print_grid(expanded_cosmos);
+        let expected_cosmos_data = read_file("resources/input_day_11_test_b.txt").unwrap();
+        let expected_data_parser = Parser::new(&expected_cosmos_data);
+        let expected_cosmos = expected_data_parser.cosmos;
+        assert_eq!(*expanded_cosmos, expected_cosmos);
     }
 }
