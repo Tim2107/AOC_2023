@@ -26,7 +26,6 @@ impl IntoIsizeTuple for (isize, usize) {
     }
 }
 
-
 pub fn subtract_tuples<T: IntoIsizeTuple>(a: T, b: T) -> (isize, isize) {
     let a = a.into_isize_tuple();
     let b = b.into_isize_tuple();

@@ -94,7 +94,6 @@ impl Explorer {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use rstest::rstest;
