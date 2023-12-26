@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use colored::*;
 use crate::day_10::parser::Parser;
 use crate::day_10::tile::Tile;
 use crate::day_10::loop_iterator::LoopIterator;
@@ -22,7 +23,7 @@ impl Explorer {
     pub fn find_furthest_distance(&self) -> usize {
         let map_data = self.get_map_tile_data();
         let tile_loop_iterator = LoopIterator::new(&map_data, self.start_position);
-        let total_jumps = tile_loop_iterator.map(|(count, _, _)| count).sum::<usize>();
+        let total_jumps = tile_loop_iterator.map(|(count, _, _, _)| count).sum::<usize>();
         total_jumps / 2
     }
 
@@ -30,9 +31,9 @@ impl Explorer {
         let map_data = self.get_map_tile_data();
         let tile_loop_iterator = LoopIterator::new(&map_data, self.start_position);
 
-        for (_, position,is_forward) in tile_loop_iterator {
-            let tile_char = self.map[position.0][position.1];
-            println!("Tile: {}, is_forward: {}", tile_char, is_forward);
+        for (_, position,tile,is_forward) in tile_loop_iterator {
+            println!("Tile: {} at position {} {} is_forward: {}", tile.tile_type(), position.0, position.1, format!("{:?}", is_forward).green());
+            println!("");
         }
     }
 
@@ -85,6 +86,7 @@ impl Explorer {
             .collect()
     }
 }
+
 
 #[cfg(test)]
 mod tests {
@@ -140,6 +142,14 @@ mod tests {
     fn test_visualize_lateral_data(#[case] input_file:&str){
         let content = read_file(input_file).unwrap();
         let explorer = Explorer::new(&content);
-        let furthest_position = explorer.count_enclosed_tiles();
+        explorer.count_enclosed_tiles();
+    }
+
+    #[test]
+    fn test_visualize_lateral_data1(){
+        let content = read_file("resources/input_day_10_test_c.txt").unwrap();
+        let explorer = Explorer::new(&content);
+        explorer.count_enclosed_tiles();
     }
 }
+
