@@ -14,6 +14,22 @@ impl PathFinder {
         Self { raw_cosmos_data, galaxy_cataloge }
     }
 
+    pub fn calculate_sum_of_shortest_distances(&self) -> usize {
+        let mut sum = 0;
+        let num_galaxies = self.galaxy_cataloge.len();
+
+        for i in 1..=num_galaxies {
+            for j in i + 1..=num_galaxies {
+                if let (Some(&galaxy_a), Some(&galaxy_b)) = (self.galaxy_cataloge.get(&i), self.galaxy_cataloge.get(&j)) {
+                    let distance = PathFinder::calculate_shortest_distance(galaxy_a, galaxy_b);
+                    sum += distance;
+                }
+            }
+        }
+
+        sum
+    }
+
     pub fn calculate_shortest_distance(galaxy_a: (usize, usize) , galaxy_b: (usize, usize) ) -> usize {
         let x_distance = if galaxy_a.0 > galaxy_b.0 { galaxy_a.0 - galaxy_b.0 } else { galaxy_b.0 - galaxy_a.0 };
         let y_distance = if galaxy_a.1 > galaxy_b.1 { galaxy_a.1 - galaxy_b.1 } else { galaxy_b.1 - galaxy_a.1 };
@@ -41,14 +57,18 @@ mod tests{
     }
 
     #[rstest]
-    pub fn test_calculate_shortest_distance(){
+    #[case(5,9,9)]
+    #[case(1,7,15)]
+    #[case(3,6,17)]
+    #[case(8,9,5)]
+    pub fn test_calculate_shortest_distance( #[case] galaxy_1:usize, #[case] galaxy_2:usize, #[case]shortest_path: usize){
         let observatory_data = read_file("resources/input_day_11_test_a.txt").unwrap();
         let mut parser = Parser::new(&observatory_data);
         let cosmos_data = parser.expanded_cosmos_data();
         let path_finder = PathFinder::new(cosmos_data);
-        if let (Some(galaxy_a), Some(galaxy_b)) = (path_finder.galaxy_cataloge.get(&5), path_finder.galaxy_cataloge.get(&9)) {
+        if let (Some(galaxy_a), Some(galaxy_b)) = (path_finder.galaxy_cataloge.get(&galaxy_1), path_finder.galaxy_cataloge.get(&galaxy_2)) {
             let calculated_path = PathFinder::calculate_shortest_distance(*galaxy_a, *galaxy_b);
-            assert_eq!(calculated_path, 9);
+            assert_eq!(calculated_path, shortest_path);
         } else {
             println!("Oooops, no galaxy data found....")
         }
