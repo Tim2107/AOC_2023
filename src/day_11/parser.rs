@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 enum Dimension {
     Row,
     Column,
@@ -63,8 +65,20 @@ impl Parser {
         column < self.cosmos[0].len()
     }
 
-    fn catalogue_galaxies(&mut self){
-        
+    fn catalogue_galaxies(&mut self) -> HashMap<usize, (usize, usize)> {
+        let mut galaxy_positions = HashMap::new();
+        let mut galaxy_number = 1;
+
+        for (y, row) in self.cosmos.iter().enumerate() {
+            for (x, &data_point) in row.iter().enumerate() {
+                if data_point == '#' {
+                    galaxy_positions.insert(galaxy_number, (x, y));
+                    galaxy_number += 1;
+                }
+            }
+        }
+
+        galaxy_positions
     }
 }
 
@@ -151,5 +165,33 @@ mod tests{
         let expected_cosmos = expected_data_parser.cosmos;
 
         assert_eq!(expanded_cosmos, expected_cosmos);
+    }
+
+    #[test]
+    fn test_cataloque_galaxies() {
+
+        let observatory_data = read_file("resources/input_day_11_test_b.txt").unwrap();
+        let mut parser = Parser::new(&observatory_data);
+        let catalog = parser.catalogue_galaxies();
+        let raw_cosmos_data = parser.cosmos;
+        let cataloged_cosmos = insert_cataloge_data_into_cosmos(raw_cosmos_data, catalog);
+
+
+        let expected_cosmos_data = read_file("resources/input_day_11_test_c.txt").unwrap();
+        let expected_data_parser = Parser::new(&expected_cosmos_data);
+        let expected_cataloged_cosmos = expected_data_parser.cosmos;
+
+        assert_eq!(cataloged_cosmos, expected_cataloged_cosmos);
+    }
+
+    fn insert_cataloge_data_into_cosmos(mut raw_cosmos_data: Vec<Vec<char>>, catalogued_galaxies: HashMap<usize, (usize, usize)>) -> Vec<Vec<char>> {
+        for (number, (x, y)) in catalogued_galaxies {
+            if let Some(row) = raw_cosmos_data.get_mut(y) {
+                if let Some(column) = row.get_mut(x) {
+                    *column = char::from_digit(number as u32 % 10, 10).unwrap_or('#');
+                }
+            }
+        }
+        raw_cosmos_data
     }
 }
