@@ -3,7 +3,7 @@ use std::collections::{HashSet, VecDeque};
 use crate::day_10::parser::Parser;
 use crate::day_10::tile::Tile;
 use crate::day_10::loop_iterator::LoopIterator;
-use crate::utils::collection_operations::{choose_tuple};
+use crate::utils::collections::collection_operations::{choose_tuple};
 
 pub struct Explorer {
     map: Vec<Vec<char>>,

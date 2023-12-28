@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use crate::utils::collections::vector_iterator_2d::*;
 
 enum Dimension {
     Row,
@@ -69,12 +70,10 @@ impl Parser {
         let mut galaxy_positions = HashMap::new();
         let mut galaxy_number = 1;
 
-        for (y, row) in self.cosmos.iter().enumerate() {
-            for (x, &data_point) in row.iter().enumerate() {
-                if data_point == '#' {
-                    galaxy_positions.insert(galaxy_number, (x, y));
-                    galaxy_number += 1;
-                }
+        for (x, y, data_point) in VectorIterator2D::new(&self.cosmos) {
+            if data_point == '#' {
+                galaxy_positions.insert(galaxy_number, (x, y));
+                galaxy_number += 1;
             }
         }
 
@@ -168,15 +167,14 @@ mod tests{
     }
 
     #[test]
-    fn test_cataloque_galaxies() {
+    fn test_cataloge_galaxies() {
 
         let observatory_data = read_file("resources/input_day_11_test_b.txt").unwrap();
         let mut parser = Parser::new(&observatory_data);
         let catalog = parser.catalogue_galaxies();
         let raw_cosmos_data = parser.cosmos;
         let cataloged_cosmos = insert_cataloge_data_into_cosmos(raw_cosmos_data, catalog);
-
-
+        
         let expected_cosmos_data = read_file("resources/input_day_11_test_c.txt").unwrap();
         let expected_data_parser = Parser::new(&expected_cosmos_data);
         let expected_cataloged_cosmos = expected_data_parser.cosmos;

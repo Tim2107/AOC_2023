@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use crate::day_10::tile::Tile;
-use crate::utils::collection_operations::{add_tuples, subtract_tuples};
+use crate::utils::collections::collection_operations::{add_tuples, subtract_tuples};
 
 pub struct LoopIterator<'a> {
     tile_map: &'a HashMap<(usize, usize), Tile>,
