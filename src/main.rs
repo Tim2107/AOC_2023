@@ -44,4 +44,14 @@ fn main() {
         },
         Err(err) => { eprintln!("Error solving Day 10: {}", err); }
     }
+
+    println!();
+
+    match day_11::solve_day_11() {
+        Ok((sum_of_shortest_distances, enclosed_tile_count)) => {
+            println!("Day 11, Part 1: The sum of the shortest distances between all galaxy pairs is {}", sum_of_shortest_distances);
+            println!("To be done{} ", enclosed_tile_count);
+        },
+        Err(err) => { eprintln!("Error solving Day 10: {}", err); }
+    }
 }

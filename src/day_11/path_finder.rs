@@ -73,4 +73,14 @@ mod tests{
             println!("Oooops, no galaxy data found....")
         }
     }
+
+    #[test]
+    pub fn calculate_sum_of_shortest_distances() {
+        let observatory_data = read_file("resources/input_day_11_test_a.txt").unwrap();
+        let mut parser = Parser::new(&observatory_data);
+        let cosmos_data = parser.expanded_cosmos_data();
+        let path_finder = PathFinder::new(cosmos_data);
+        let sum_of_distances = path_finder.calculate_sum_of_shortest_distances();
+        assert_eq!(sum_of_distances, 374);
+    }
 }
