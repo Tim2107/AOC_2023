@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
 pub struct PathFinder{
-    pub raw_cosmos_data: Vec<Vec<char>>,
+    pub raw_cosmos_data: Vec<Vec<(char,usize, usize)>>,
     pub galaxy_cataloge: HashMap<usize,(usize,usize)>
 }
 
 impl PathFinder {
-    pub fn new(cosmos_data: (&Vec<Vec<char>>, HashMap<usize, (usize, usize)>)) -> Self {
+    pub fn new(cosmos_data: (&Vec<Vec<(char,usize,usize)>>, HashMap<usize, (usize, usize)>)) -> Self {
 
         let raw_cosmos_data = cosmos_data.0.to_vec();
         let galaxy_cataloge = cosmos_data.1;
@@ -40,6 +40,7 @@ impl PathFinder {
 
 #[cfg(test)]
 mod tests{
+    use num::ToPrimitive;
     use rstest::rstest;
     use crate::day_11::parser::Parser;
     use crate::utils::input_output::read_file;
@@ -83,6 +84,7 @@ mod tests{
         let mut parser = Parser::new(&observatory_data, expansion_rate);
         let cosmos_data = parser.expanded_cosmos_data();
         let path_finder = PathFinder::new(cosmos_data);
+        println!("{:?}", path_finder.galaxy_cataloge.get(&7.to_usize().unwrap()));
         let sum_of_distances = path_finder.calculate_sum_of_shortest_distances();
         assert_eq!(sum_of_distances, expected_distance);
     }

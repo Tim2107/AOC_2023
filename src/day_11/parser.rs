@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::utils::collections::vector_iterator_2d::*;
+use crate::day_11::rle_compressed_vector_iterator::RLECompressedVectorIterator;
 
 enum Dimension {
     Row,
@@ -7,23 +7,27 @@ enum Dimension {
 }
 
 pub struct Parser{
-    cosmos: Vec<Vec<char>>,
+    pub cosmos: Vec<Vec<(char, usize, usize)>>,
     expansion_rate: usize
 }
 
 impl Parser {
     pub fn new(observatory_data: &str, expansionrate: usize) -> Self {
         Parser{
-            cosmos: observatory_data.lines()
-                                    .map(|line| line.chars().collect())
-                                    .collect(),
+            cosmos: observatory_data
+                    .lines()
+                    .map(|line| {line.chars()
+                                     .map(|datapoint| (datapoint, 1, 1))
+                                     .collect()}
+                    )
+                    .collect(),
             expansion_rate: expansionrate,
         }
     }
 
-    pub fn expanded_cosmos_data(&mut self) -> (&Vec<Vec<char>>, HashMap<usize, (usize, usize)>) {
+    pub fn expanded_cosmos_data(&mut self) -> (&Vec<Vec<(char, usize, usize)>>, HashMap<usize, (usize, usize)>) {
         self.adjust_for_cosmic_expansion();
-        let galaxy_cataloge = self.catalogue_galaxies();
+        let galaxy_cataloge = self.cataloge_galaxies();
         (&self.cosmos, galaxy_cataloge)
     }
     
@@ -33,39 +37,43 @@ impl Parser {
     }
 
     fn multiply_at_index_if_empty_space(&mut self, dimension: Dimension) {
-        let mut index : usize = 0;
+        let mut index: usize = 0;
+
         while match dimension { Dimension::Row =>       self.is_below_row_size(index),
                                 Dimension::Column =>    self.is_below_column_size(index) }
+
         { if match dimension  { Dimension::Row =>       self.is_empty_row(index),
-                                Dimension::Column =>    self.is_empty_column(index) }
-            {
-                match dimension  { Dimension::Row =>       self.expand_row(index),
-                                   Dimension::Column =>    self.expand_column(index) }
-                index += self.expansion_rate - 1;
+                                Dimension::Column =>    self.is_empty_column(index) } {
+
+            match dimension   { Dimension::Row =>       self.expand_row(index),
+                                Dimension::Column =>    self.expand_column(index) }
+
             }
-            index += 1;
+            index +=1;
         }
     }
 
     fn is_empty_row(&self, row: usize) -> bool {
-        self.cosmos[row].iter().all(|&column| column == '.')
+        self.cosmos[row].iter().all(|&(column,_,_)| column == '.')
     }
 
     fn is_empty_column(&self, column: usize) -> bool {
-        self.cosmos.iter().all(|row| row[column] == '.')
+        self.cosmos.iter().all(|row| row[column].0 == '.')
     }
 
     fn expand_row(&mut self, row: usize) {
-        for _ in 0..self.expansion_rate - 1 {
-            self.cosmos.insert(row + 1, self.cosmos[row].clone());
+        if let Some(row_data) = self.cosmos.get_mut(row) {
+            for (_, _, y_count) in row_data.iter_mut() {
+                *y_count *= self.expansion_rate;
+            }
         }
     }
 
     fn expand_column(&mut self, column: usize) {
+
         for row in &mut self.cosmos {
-            let char_to_insert = row[column];
-            for _ in 0..self.expansion_rate - 1 {
-                row.insert(column + 1, char_to_insert);
+            if let Some((_, x_count, _)) = row.get_mut(column) {
+                *x_count *= self.expansion_rate;
             }
         }
     }
@@ -78,11 +86,11 @@ impl Parser {
         column < self.cosmos[0].len()
     }
 
-    fn catalogue_galaxies(&mut self) -> HashMap<usize, (usize, usize)> {
+    fn cataloge_galaxies(&mut self) -> HashMap<usize, (usize, usize)> {
         let mut galaxy_positions = HashMap::new();
         let mut galaxy_number = 1;
 
-        for (x, y, data_point) in VectorIterator2D::new(&self.cosmos) {
+        for (x, y, data_point) in RLECompressedVectorIterator::new(&self.cosmos) {
             if data_point == '#' {
                 galaxy_positions.insert(galaxy_number, (x, y));
                 galaxy_number += 1;
@@ -97,7 +105,7 @@ impl Parser {
 mod tests{
     use rstest::*;
     use super::*;
-    use crate::utils::input_output::{read_file};
+    use crate::utils::input_output::{print_grid_for_tuples, read_file};
 
     #[rstest]
     #[case("resources/input_day_11_test_a.txt")]
@@ -142,9 +150,9 @@ mod tests{
 
     #[rstest]
     pub fn test_double_columns_of_empty_space(test_cosmos: String) {
-      let expected_cosmos = vec![vec!['.', '.','.','#'],
-                                 vec!['.', '.','.','.'],
-                                 vec!['#', '.','.','.']];
+      let expected_cosmos: Vec<Vec<(char,usize, usize)>>=   vec![vec![('.',1,1), ('.',2,1),('#',1,1)],
+                                                                 vec![('.',1,1), ('.',2,1),('.',1,1)],
+                                                                 vec![('#',1,1), ('.',2,1),('.',1,1)]];
 
         let mut parser = Parser::new(&test_cosmos,2);
         parser.multiply_at_index_if_empty_space(Dimension::Column);
@@ -153,10 +161,9 @@ mod tests{
 
     #[rstest]
     pub fn test_double_rows_of_empty_space(test_cosmos: String) {
-        let expected_cosmos = vec![vec!['.', '.', '#'],
-                                   vec!['.', '.', '.'],
-                                   vec!['.', '.', '.'],
-                                   vec!['#', '.', '.']];
+        let expected_cosmos = vec![vec![('.',1,1), ('.',1,1), ('#',1,1)],
+                                   vec![('.',1,2), ('.',1,2), ('.',1,2)],
+                                   vec![('#',1,1), ('.',1,1), ('.',1,1)]];
 
         let mut parser = Parser::new(&test_cosmos,2);
         parser.multiply_at_index_if_empty_space(Dimension::Row);
@@ -183,8 +190,8 @@ mod tests{
 
         let observatory_data = read_file("resources/input_day_11_test_b.txt").unwrap();
         let mut parser = Parser::new(&observatory_data,2);
-        let catalog = parser.catalogue_galaxies();
-        let raw_cosmos_data = parser.cosmos;
+        let catalog = parser.cataloge_galaxies();
+        let raw_cosmos_data : Vec<Vec<(char, usize, usize)>> = parser.cosmos;
         let cataloged_cosmos = insert_cataloge_data_into_cosmos(raw_cosmos_data, catalog);
         
         let expected_cosmos_data = read_file("resources/input_day_11_test_c.txt").unwrap();
@@ -194,11 +201,33 @@ mod tests{
         assert_eq!(cataloged_cosmos, expected_cataloged_cosmos);
     }
 
-    fn insert_cataloge_data_into_cosmos(mut raw_cosmos_data: Vec<Vec<char>>, catalogued_galaxies: HashMap<usize, (usize, usize)>) -> Vec<Vec<char>> {
+    #[test]
+    fn visualize_cosmos(){
+        let observatory_data = read_file("resources/input_day_11_test_a.txt").unwrap();
+        let mut parser = Parser::new(&observatory_data,8);
+        let catalog = parser.cataloge_galaxies();
+        parser.adjust_for_cosmic_expansion();
+        let raw_cosmos_data : Vec<Vec<(char, usize, usize)>> = parser.cosmos;
+        let cataloged_cosmos = insert_cataloge_data_into_cosmos(raw_cosmos_data, catalog);
+        print_grid_for_tuples(&cataloged_cosmos);
+    }
+
+    #[test]
+    fn visualize_cosmos_1(){
+        let observatory_data = read_file("resources/input_day_11_test_a.txt").unwrap();
+        let mut parser = Parser::new(&observatory_data,5);
+        let catalog = parser.cataloge_galaxies();
+        let raw_cosmos_data : Vec<Vec<(char, usize, usize)>> = parser.cosmos;
+        //let cataloged_cosmos = insert_cataloge_data_into_cosmos(raw_cosmos_data, catalog);
+        print_grid_for_tuples(&raw_cosmos_data);
+    }
+
+
+    fn insert_cataloge_data_into_cosmos(mut raw_cosmos_data: Vec<Vec<(char, usize, usize)>>, catalogued_galaxies: HashMap<usize, (usize, usize)>) -> Vec<Vec<(char, usize, usize)>> {
         for (number, (x, y)) in catalogued_galaxies {
             if let Some(row) = raw_cosmos_data.get_mut(y) {
                 if let Some(column) = row.get_mut(x) {
-                    *column = char::from_digit(number as u32 % 10, 10).unwrap_or('#');
+                    column.0 = char::from_digit(number as u32 % 10, 10).unwrap_or('#');
                 }
             }
         }

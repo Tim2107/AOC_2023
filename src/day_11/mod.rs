@@ -4,6 +4,7 @@ use crate::day_11::path_finder::PathFinder;
 
 mod parser;
 mod path_finder;
+mod rle_compressed_vector_iterator;
 
 pub fn solve_day_11() -> anyhow::Result<(usize, usize)> {
     let content = read_file("resources/input_day_11.txt")?;

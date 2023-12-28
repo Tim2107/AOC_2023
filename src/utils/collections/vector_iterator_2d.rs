@@ -1,16 +1,16 @@
-pub struct VectorIterator2D<'a> {
-    grid: &'a Vec<Vec<char>>,
+pub struct VectorIterator2D {
+    grid: Vec<Vec<char>>,
     row: usize,
     col: usize,
 }
 
-impl<'a> VectorIterator2D<'a> {
-    pub fn new(grid: &'a Vec<Vec<char>>) -> Self {
+impl VectorIterator2D {
+    pub fn new(grid: Vec<Vec<char>>) -> Self {
         VectorIterator2D { grid, row: 0, col: 0 }
     }
 }
 
-impl<'a> Iterator for VectorIterator2D<'a> {
+impl Iterator for VectorIterator2D {
     type Item = (usize, usize, char);
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -27,3 +27,4 @@ impl<'a> Iterator for VectorIterator2D<'a> {
         }
     }
 }
+
