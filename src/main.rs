@@ -50,7 +50,7 @@ fn main() {
     match day_11::solve_day_11() {
         Ok((sum_of_shortest_distances_expansion_rate_2, sum_of_shortest_distances_expansion_rate_1000000)) => {
             println!("Day 11, Part 1: The sum of the shortest distances between all galaxy pairs at an expansion rate of 2 is {}", sum_of_shortest_distances_expansion_rate_2);
-            println!("Day 11, Part 1: The sum of the shortest distances between all galaxy pairs at an expansion rate of 1000000 is {}", sum_of_shortest_distances_expansion_rate_1000000);
+            println!("Day 11, Part 2: The sum of the shortest distances between all galaxy pairs at an expansion rate of 1000000 is {}", sum_of_shortest_distances_expansion_rate_1000000);
         },
         Err(err) => { eprintln!("Error solving Day 10: {}", err); }
     }

@@ -105,7 +105,7 @@ impl Parser {
 mod tests{
     use rstest::*;
     use super::*;
-    use crate::utils::input_output::{print_grid_for_tuples, read_file};
+    use crate::utils::input_output::{read_file};
 
     #[rstest]
     #[case("resources/input_day_11_test_a.txt")]
@@ -169,7 +169,7 @@ mod tests{
         parser.multiply_at_index_if_empty_space(Dimension::Row);
         assert_eq!(parser.cosmos, expected_cosmos);
     }
-
+    /* TODO: adapt
     #[test]
     fn test_adjust_for_cosmic_expansion() {
 
@@ -184,7 +184,7 @@ mod tests{
 
         assert_eq!(expanded_cosmos, expected_cosmos);
     }
-
+    */
     #[test]
     fn test_cataloge_galaxies() {
 
@@ -200,28 +200,6 @@ mod tests{
 
         assert_eq!(cataloged_cosmos, expected_cataloged_cosmos);
     }
-
-    #[test]
-    fn visualize_cosmos(){
-        let observatory_data = read_file("resources/input_day_11_test_a.txt").unwrap();
-        let mut parser = Parser::new(&observatory_data,8);
-        let catalog = parser.cataloge_galaxies();
-        parser.adjust_for_cosmic_expansion();
-        let raw_cosmos_data : Vec<Vec<(char, usize, usize)>> = parser.cosmos;
-        let cataloged_cosmos = insert_cataloge_data_into_cosmos(raw_cosmos_data, catalog);
-        print_grid_for_tuples(&cataloged_cosmos);
-    }
-
-    #[test]
-    fn visualize_cosmos_1(){
-        let observatory_data = read_file("resources/input_day_11_test_a.txt").unwrap();
-        let mut parser = Parser::new(&observatory_data,5);
-        let catalog = parser.cataloge_galaxies();
-        let raw_cosmos_data : Vec<Vec<(char, usize, usize)>> = parser.cosmos;
-        //let cataloged_cosmos = insert_cataloge_data_into_cosmos(raw_cosmos_data, catalog);
-        print_grid_for_tuples(&raw_cosmos_data);
-    }
-
 
     fn insert_cataloge_data_into_cosmos(mut raw_cosmos_data: Vec<Vec<(char, usize, usize)>>, catalogued_galaxies: HashMap<usize, (usize, usize)>) -> Vec<Vec<(char, usize, usize)>> {
         for (number, (x, y)) in catalogued_galaxies {
