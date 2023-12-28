@@ -19,6 +19,13 @@ impl Parser {
         }
     }
 
+    pub fn expanded_cosmos_data(&mut self) -> (&Vec<Vec<char>>, HashMap<usize, (usize, usize)>) {
+        self.adjust_for_cosmic_expansion();
+        let galaxy_index = self.catalogue_galaxies();
+        (&self.cosmos, galaxy_index)
+    }
+
+
     pub fn adjust_for_cosmic_expansion(&mut self) {
         self.double_at_index_if_empty_space(Dimension::Row);
         self.double_at_index_if_empty_space(Dimension::Column);
