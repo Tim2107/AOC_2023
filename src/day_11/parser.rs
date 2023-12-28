@@ -8,14 +8,16 @@ enum Dimension {
 
 pub struct Parser{
     cosmos: Vec<Vec<char>>,
+    expansion_rate: usize
 }
 
 impl Parser {
-    pub fn new(observatory_data: &str) -> Self {
+    pub fn new(observatory_data: &str, expansionrate: usize) -> Self {
         Parser{
             cosmos: observatory_data.lines()
                                     .map(|line| line.chars().collect())
                                     .collect(),
+            expansion_rate: expansionrate,
         }
     }
 
@@ -24,27 +26,25 @@ impl Parser {
         let galaxy_cataloge = self.catalogue_galaxies();
         (&self.cosmos, galaxy_cataloge)
     }
-
-
+    
     pub fn adjust_for_cosmic_expansion(&mut self) {
-        self.double_at_index_if_empty_space(Dimension::Row);
-        self.double_at_index_if_empty_space(Dimension::Column);
+        self.multiply_at_index_if_empty_space(Dimension::Row);
+        self.multiply_at_index_if_empty_space(Dimension::Column);
     }
 
-    fn double_at_index_if_empty_space (&mut self, dimension: Dimension) {
+    fn multiply_at_index_if_empty_space(&mut self, dimension: Dimension) {
         let mut index : usize = 0;
         while match dimension { Dimension::Row =>       self.is_below_row_size(index),
                                 Dimension::Column =>    self.is_below_column_size(index) }
         { if match dimension  { Dimension::Row =>       self.is_empty_row(index),
                                 Dimension::Column =>    self.is_empty_column(index) }
             {
-                match dimension  { Dimension::Row =>       self.double_row(index),
-                                   Dimension::Column =>    self.double_column(index) }
-                index +=1;
+                match dimension  { Dimension::Row =>       self.expand_row(index),
+                                   Dimension::Column =>    self.expand_column(index) }
+                index += self.expansion_rate - 1;
             }
-            index +=1;
+            index += 1;
         }
-
     }
 
     fn is_empty_row(&self, row: usize) -> bool {
@@ -55,13 +55,18 @@ impl Parser {
         self.cosmos.iter().all(|row| row[column] == '.')
     }
 
-    fn double_row(&mut self, row: usize) {
-        self.cosmos.insert(row + 1, self.cosmos[row].clone());
+    fn expand_row(&mut self, row: usize) {
+        for _ in 0..self.expansion_rate - 1 {
+            self.cosmos.insert(row + 1, self.cosmos[row].clone());
+        }
     }
 
-    fn double_column(&mut self, column: usize) {
+    fn expand_column(&mut self, column: usize) {
         for row in &mut self.cosmos {
-            row.insert(column + 1, '.');
+            let char_to_insert = row[column];
+            for _ in 0..self.expansion_rate - 1 {
+                row.insert(column + 1, char_to_insert);
+            }
         }
     }
 
@@ -112,25 +117,25 @@ mod tests{
 
     #[rstest]
     pub fn test_is_empty_row_positive(test_cosmos: String) {
-        let parser = Parser::new(&test_cosmos);
+        let parser = Parser::new(&test_cosmos,2);
         assert!(parser.is_empty_row(1));
     }
 
     #[rstest]
     pub fn test_is_empty_row_negative(test_cosmos: String) {
-        let parser = Parser::new(&test_cosmos);
+        let parser = Parser::new(&test_cosmos,2);
         assert!(!parser.is_empty_row(0));
     }
 
     #[rstest]
     pub fn test_is_empty_column_positive(test_cosmos: String) {
-        let parser = Parser::new(&test_cosmos);
+        let parser = Parser::new(&test_cosmos,2);
         assert!(parser.is_empty_column(1));
     }
 
     #[rstest]
     pub fn test_is_empty_column_negative(test_cosmos: String) {
-        let parser = Parser::new(&test_cosmos);
+        let parser = Parser::new(&test_cosmos,2);
         assert!(!parser.is_empty_column(0));
     }
 
@@ -141,8 +146,8 @@ mod tests{
                                  vec!['.', '.','.','.'],
                                  vec!['#', '.','.','.']];
 
-        let mut parser = Parser::new(&test_cosmos);
-        parser.double_at_index_if_empty_space(Dimension::Column);
+        let mut parser = Parser::new(&test_cosmos,2);
+        parser.multiply_at_index_if_empty_space(Dimension::Column);
         assert_eq!(parser.cosmos, expected_cosmos);
     }
 
@@ -153,8 +158,8 @@ mod tests{
                                    vec!['.', '.', '.'],
                                    vec!['#', '.', '.']];
 
-        let mut parser = Parser::new(&test_cosmos);
-        parser.double_at_index_if_empty_space(Dimension::Row);
+        let mut parser = Parser::new(&test_cosmos,2);
+        parser.multiply_at_index_if_empty_space(Dimension::Row);
         assert_eq!(parser.cosmos, expected_cosmos);
     }
 
@@ -162,12 +167,12 @@ mod tests{
     fn test_adjust_for_cosmic_expansion() {
 
         let observatory_data = read_file("resources/input_day_11_test_a.txt").unwrap();
-        let mut parser = Parser::new(&observatory_data);
+        let mut parser = Parser::new(&observatory_data,2);
         parser.adjust_for_cosmic_expansion();
         let expanded_cosmos = parser.cosmos;
 
         let expected_cosmos_data = read_file("resources/input_day_11_test_b.txt").unwrap();
-        let expected_data_parser = Parser::new(&expected_cosmos_data);
+        let expected_data_parser = Parser::new(&expected_cosmos_data,2);
         let expected_cosmos = expected_data_parser.cosmos;
 
         assert_eq!(expanded_cosmos, expected_cosmos);
@@ -177,13 +182,13 @@ mod tests{
     fn test_cataloge_galaxies() {
 
         let observatory_data = read_file("resources/input_day_11_test_b.txt").unwrap();
-        let mut parser = Parser::new(&observatory_data);
+        let mut parser = Parser::new(&observatory_data,2);
         let catalog = parser.catalogue_galaxies();
         let raw_cosmos_data = parser.cosmos;
         let cataloged_cosmos = insert_cataloge_data_into_cosmos(raw_cosmos_data, catalog);
         
         let expected_cosmos_data = read_file("resources/input_day_11_test_c.txt").unwrap();
-        let expected_data_parser = Parser::new(&expected_cosmos_data);
+        let expected_data_parser = Parser::new(&expected_cosmos_data,2);
         let expected_cataloged_cosmos = expected_data_parser.cosmos;
 
         assert_eq!(cataloged_cosmos, expected_cataloged_cosmos);

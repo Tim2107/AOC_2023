@@ -63,7 +63,7 @@ mod tests{
     #[case(8,9,5)]
     pub fn test_calculate_shortest_distance( #[case] galaxy_1:usize, #[case] galaxy_2:usize, #[case]shortest_path: usize){
         let observatory_data = read_file("resources/input_day_11_test_a.txt").unwrap();
-        let mut parser = Parser::new(&observatory_data);
+        let mut parser = Parser::new(&observatory_data,2);
         let cosmos_data = parser.expanded_cosmos_data();
         let path_finder = PathFinder::new(cosmos_data);
         if let (Some(galaxy_a), Some(galaxy_b)) = (path_finder.galaxy_cataloge.get(&galaxy_1), path_finder.galaxy_cataloge.get(&galaxy_2)) {
@@ -74,13 +74,16 @@ mod tests{
         }
     }
 
-    #[test]
-    pub fn calculate_sum_of_shortest_distances() {
+    #[rstest]
+    #[case(2,374)]
+    #[case(10,1030)]
+    #[case(100,8410)]
+    pub fn calculate_sum_of_shortest_distances(#[case] expansion_rate:usize, #[case] expected_distance:usize) {
         let observatory_data = read_file("resources/input_day_11_test_a.txt").unwrap();
-        let mut parser = Parser::new(&observatory_data);
+        let mut parser = Parser::new(&observatory_data, expansion_rate);
         let cosmos_data = parser.expanded_cosmos_data();
         let path_finder = PathFinder::new(cosmos_data);
         let sum_of_distances = path_finder.calculate_sum_of_shortest_distances();
-        assert_eq!(sum_of_distances, 374);
+        assert_eq!(sum_of_distances, expected_distance);
     }
 }
